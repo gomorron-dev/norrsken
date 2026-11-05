@@ -8,6 +8,7 @@ Installed copies update themselves to the newest version (see [Updates](README.m
 - While it installs you get an update screen showing each step, and afterwards Norrsken tells you what's new and offers to restart your PC.
 - Settings › Updates shows exactly where things are: checking, downloading (with progress), ready to install, or what went wrong.
 - Installing an update copies only the files that changed, retries files that are briefly in use, and keeps your sounds.
+
 ## 0.4.0
 
 New:
