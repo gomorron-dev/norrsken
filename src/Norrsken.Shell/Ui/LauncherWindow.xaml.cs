@@ -94,6 +94,30 @@ public partial class LauncherWindow : Window
     [System.Runtime.InteropServices.DllImport("secur32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
     static extern bool GetUserNameExW(int format, System.Text.StringBuilder name, ref uint size);
 
+    /// <summary>
+    /// "Documents › Rockstar Games › … › Launcher" instead of "C:\Users\you\Documents\Rockstar Games\Social Club\…":
+    /// known folders by name, and when it's long the start and the end are kept (the end says the most).
+    /// </summary>
+    internal static string FriendlyFolder(string dir)
+    {
+        if (dir.Length == 0) return "";
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var known = new (string Path, string Name)[]
+        {
+            (Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Desktop"), (Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Documents"),
+            (Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Pictures"), (Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), "Music"),
+            (Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "Videos"), (System.IO.Path.Combine(home, "Downloads"), "Downloads"), (home, "Home"),
+        };
+        string start = "", rest = dir;
+        foreach (var (p, name) in known)
+            if (p.Length > 0 && (dir.Equals(p, StringComparison.OrdinalIgnoreCase) || dir.StartsWith(p + "\\", StringComparison.OrdinalIgnoreCase)))
+            { start = name; rest = dir[p.Length..]; break; }
+        var parts = rest.Split('\\', StringSplitOptions.RemoveEmptyEntries).ToList();
+        if (start.Length > 0) parts.Insert(0, start);
+        if (parts.Count > 4) parts = [parts[0], parts[1], "…", parts[^2], parts[^1]];
+        return string.Join("  ›  ", parts);
+    }
+
     static double DockTop()
     {
         var screen = SystemParameters.PrimaryScreenHeight;
@@ -350,17 +374,17 @@ public partial class LauncherWindow : Window
         var list = new List<Result>();
         foreach (var (id, title, keywords) in SettingsWindow.PageIndex)
             if (title.Contains(q, StringComparison.CurrentCultureIgnoreCase) || keywords.Split(' ').Any(k => k.StartsWith(q, StringComparison.CurrentCultureIgnoreCase)))
-                list.Add(new Result { Title = title, Subtitle = "Settings", Kind = "Setting", Group = "Settings", Icon = NorrskenApps.RenderTile("settings", 44), Open = () => App.MainDock?.OpenSettings(id) });
+                list.Add(new Result { Title = title, Subtitle = "Settings", Kind = "Setting", Group = "Settings", Icon = NorrskenApps.RenderTile("settings", 128), Open = () => App.MainDock?.OpenSettings(id) });
         var hits = await Task.Run(() => SystemSearch.Files(q, 8, cts.Token));
         if (cts.IsCancellationRequested) return;
         foreach (var h in hits)
             list.Add(new Result
             {
-                Title = h.Name, Subtitle = System.IO.Path.GetDirectoryName(h.Path) ?? "", Kind = h.IsDir ? "Folder" : "File", Group = "Files and folders", Path = h.Path,
+                Title = h.Name, Subtitle = FriendlyFolder(System.IO.Path.GetDirectoryName(h.Path) ?? ""), Kind = h.IsDir ? "Folder" : "File", Group = "Files and folders", Path = h.Path,
                 Icon = Interop.ShellIcons.Get(h.Path, 48),
                 Open = () => { if (h.IsDir) NorrskenApps.Launch("files", h.Path); else Files.Open(h.Path); },
             });
-        list.Add(new Result { Title = $"Search for “{q}” in Files", Subtitle = "Home and every subfolder", Kind = "", Group = "Files and folders", Icon = NorrskenApps.RenderTile("files", 44), Open = () => NorrskenApps.Launch("files", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)) });
+        list.Add(new Result { Title = $"Search for “{q}” in Files", Subtitle = "Home and every subfolder", Kind = "", Group = "Files and folders", Icon = NorrskenApps.RenderTile("files", 128), Open = () => NorrskenApps.Launch("files", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)) });
         _otherResults = list;
         Render();
     }
@@ -450,8 +474,11 @@ public partial class LauncherWindow : Window
     void ShowPreview(Result r)
     {
         PreviewPanel.Children.Clear();
-        FrameworkElement icon = r.Entry != null
-            ? new ContentControl { Content = r.Entry, ContentTemplate = (DataTemplate)FindResource("AppIcon"), Width = 72, Height = 72, Focusable = false }
+        // Apps with a Norrsken glyph draw it as vectors; others get Windows' 256 px icon, so nothing is upscaled.
+        FrameworkElement icon = r.Entry is { HasGlyph: true }
+            ? new ContentControl { Content = r.Entry, ContentTemplate = (DataTemplate)FindResource("AppIcon"), Width = 88, Height = 88, Focusable = false }
+            : r.Entry != null
+            ? new Image { Source = Interop.ShellIcons.Get(r.Entry.ShellPath, Interop.ShellIcons.LargeSize) ?? r.Entry.Icon, Width = 88, Height = 88 }
             : new Image { Source = r.Path != null && !Directory.Exists(r.Path) ? (Interop.ShellIcons.Thumbnail(r.Path, 256) ?? r.Icon) : r.Icon, MaxWidth = 220, MaxHeight = 150, Stretch = Stretch.Uniform };
         icon.HorizontalAlignment = HorizontalAlignment.Center;
         icon.Margin = new Thickness(0, 10, 0, 16);

@@ -43,10 +43,13 @@ internal static class ShellIcons
     static readonly ConcurrentDictionary<string, ImageSource?> Cache = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Dock icons render at 42 DIP and magnify to ~65 DIP (~98 px at 150 % scaling), so 96 px
-    /// sources keep them sharp; the shell picks the best embedded size and downsamples.
+    /// Dock icons render at 42 DIP and magnify to ~65 DIP: 130 px at 200 % scaling, so 128 px sources stay sharp
+    /// on high-DPI screens too. Big previews ask for <see cref="LargeSize"/>.
     /// </summary>
-    public const int DefaultSize = 96;
+    public const int DefaultSize = 128;
+
+    /// <summary>For icons shown large (previews): Windows' 256 px jumbo icon when the app ships one.</summary>
+    public const int LargeSize = 256;
 
     static int _unframed;
     /// <summary>How many icons came back framed and were fetched at their real size instead.</summary>
@@ -184,7 +187,9 @@ internal static class ShellIcons
         for (int i = 3; i < px.Length; i += 4) if (px[i] != 0) { hasAlpha = true; break; }
         if (!hasAlpha) for (int i = 3; i < px.Length; i += 4) px[i] = 255;
         framed = hasAlpha && IsFramed(px, w, h, minSize);
-        if (unframe && Unframe(px, w, h) is { } cropped) return cropped;
+        // Only Windows' translucent frame line is cut away. An opaque light square can be the app's real
+        // icon (Android Studio, many others), so that case only falls back to the smaller sizes above.
+        if (unframe && SquareLine(px, w, h) && Unframe(px, w, h) is { } cropped) return cropped;
 
         var src = BitmapSource.Create(w, h, 96, 96, PixelFormats.Pbgra32, null, px, w * 4);
         src.Freeze();

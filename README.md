@@ -57,6 +57,21 @@ art and controls. It hides itself for full-screen games, and the Win key always 
 </tr>
 </table>
 
+## The Bin
+
+<img src="docs/images/bin.png" alt="The Bin" width="100%">
+
+The Recycle Bin, rethought. It lives at the end of the dock: drop files on it and it gulps them; click
+it to see everything you've deleted, grouped by when.
+
+- **Undo the last delete** in one go (Ctrl+Z), however many files it was.
+- **Put back** rebuilds the folder something came from if that folder is gone; **Put back in…** sends it somewhere else.
+- **Keep** an item and emptying automatically never touches it.
+- **Empty automatically** after 7, 30 or 90 days, or never.
+- **Shred** instead of delete: the data is overwritten first, so recovery tools find noise.
+- A running total of the space you've freed this month, and a preview of whatever you select.
+
+It's Windows' own Recycle Bin underneath, so Explorer, apps and Norrsken all share one bin.
 ## Settings that don't send you back to Windows
 
 <img src="docs/images/settings.png" alt="Norrsken Settings" width="100%">
@@ -86,6 +101,7 @@ and Windows' own light or dark mode follow the theme.
 | Windows Terminal | Norrsken Terminal (ConPTY, tabs) | |
 | Run · Win+X · Project · Clipboard | Norrsken versions of each | Win+R, Win+X, Win+P, Win+V |
 | Snipping Tool | Screenshot: area, window, screen or free-form on any monitor | PrtScn, Win+Shift+S |
+| Recycle Bin | The Bin: undo, keep, shred, auto-empty, preview | |
 | Photos, Media Player | [Flickerbox](#flickerbox) | |
 | Title bars | Centred title and pebble buttons (apps that draw their own are left alone) | |
 | Desktop right-click | Norrsken's menu | |

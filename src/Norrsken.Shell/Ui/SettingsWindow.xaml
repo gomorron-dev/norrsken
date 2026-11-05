@@ -111,6 +111,9 @@
                   <CheckBox x:Name="ClockToggle" Style="{StaticResource Toggle}" Content="Show clock"
                             Checked="Toggle_Changed" Unchecked="Toggle_Changed"/>
                   <Border Style="{StaticResource Hairline}"/>
+                  <CheckBox x:Name="BinToggle" Style="{StaticResource Toggle}" Content="Show the Bin (drop files on it to delete them)"
+                            Checked="Toggle_Changed" Unchecked="Toggle_Changed"/>
+                  <Border Style="{StaticResource Hairline}"/>
                   <CheckBox x:Name="Clock24Toggle" Style="{StaticResource Toggle}" Content="24-hour time"
                             Checked="Toggle_Changed" Unchecked="Toggle_Changed"/>
                   <Border Style="{StaticResource Hairline}"/>

@@ -149,8 +149,7 @@ public partial class QuickSettingsWindow : Window
         if (state == null) return;
         MediaTitle.Text = state.Title;
         MediaArtist.Text = state.Artist;
-        MediaSource.Text = App.Apps.FirstOrDefault(a => a.ParsingName.Equals(state.SourceAppId, StringComparison.OrdinalIgnoreCase))?.Name
-                           ?? Path.GetFileNameWithoutExtension(state.SourceAppId);
+        MediaSource.Text = MediaController.SourceName(state.SourceAppId);
         PlayGlyph.Glyph = state.Playing ? "pause" : "play-solid";
         PlayGlyph.Filled = !state.Playing;
         if (state.Art != null)

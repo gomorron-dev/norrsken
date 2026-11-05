@@ -36,6 +36,7 @@ public partial class SettingsWindow : Window
         ReserveToggle.IsChecked = App.Settings.ReserveSpace;
         AutoHideToggle.IsChecked = App.Settings.AutoHide;
         ClockToggle.IsChecked = App.Settings.ShowClock;
+        BinToggle.IsChecked = App.Settings.ShowBinInDock;
         Clock24Toggle.IsChecked = App.Settings.Clock24h;
         SecondsToggle.IsChecked = App.Settings.ShowSeconds;
         ReduceMotionToggle.IsChecked = App.Settings.ReduceMotion;
@@ -174,6 +175,7 @@ public partial class SettingsWindow : Window
         s.ReserveSpace = ReserveToggle.IsChecked == true;
         s.AutoHide = AutoHideToggle.IsChecked == true;
         s.ShowClock = ClockToggle.IsChecked == true;
+        s.ShowBinInDock = BinToggle.IsChecked == true;
         s.Clock24h = Clock24Toggle.IsChecked == true;
         s.ShowSeconds = SecondsToggle.IsChecked == true;
         s.ReduceMotion = ReduceMotionToggle.IsChecked == true;

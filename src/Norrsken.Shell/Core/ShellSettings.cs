@@ -32,7 +32,16 @@ public sealed class ShellSettings
     public bool WinKeyOpensLauncher { get; set; } = true;
     /// <summary>Norrsken (and Flickerbox) install new GitHub releases on their own.</summary>
     public bool AutoUpdate { get; set; } = true;
-    /// <summary>Alt+Tab shows Norrsken's switcher instead of Windows'.</summary>
+    /// <summary>The Bin in the dock (drop files on it, click to open).</summary>
+    public bool ShowBinInDock { get; set; } = true;
+    /// <summary>Bin items older than this many days are removed for good (0: never).</summary>
+    public int BinAutoEmptyDays { get; set; } = 0;
+    /// <summary>Deleting forever overwrites the data first.</summary>
+    public bool BinShred { get; set; } = false;
+    /// <summary>Bin items you've kept: auto-empty never touches them.</summary>
+    public List<string> BinKept { get; set; } = [];
+    public string BinFreedMonth { get; set; } = "";
+    public long BinFreedBytes { get; set; }    /// <summary>Alt+Tab shows Norrsken's switcher instead of Windows'.</summary>
     public bool NorrskenAltTab { get; set; } = true;
     public bool ReplacedAppsRetired { get; set; }
     public bool MediaAppsRetired { get; set; }

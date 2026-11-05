@@ -99,6 +99,33 @@ public sealed class MediaController
 
     public sealed record State(string Title, string Artist, string SourceAppId, bool Playing, ImageSource? Art);
 
+    static readonly Dictionary<string, string> KnownSources = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["chrome"] = "Google Chrome", ["msedge"] = "Microsoft Edge", ["308046B0AF4A39CB"] = "Firefox", ["firefox"] = "Firefox",
+        ["brave"] = "Brave", ["opera"] = "Opera", ["vivaldi"] = "Vivaldi", ["spotify"] = "Spotify", ["discord"] = "Discord",
+        ["vlc"] = "VLC", ["Microsoft.ZuneMusic"] = "Media Player", ["Microsoft.ZuneVideo"] = "Films & TV", ["flickerbox"] = "Flickerbox",
+    };
+
+    /// <summary>
+    /// The playing app's name as people know it: "Google Chrome", not "Chrome.UserData"; "Spotify", not
+    /// "SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify".
+    /// </summary>
+    public static string SourceName(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return "";
+        if (App.Apps.FirstOrDefault(a => a.ParsingName.Equals(id, StringComparison.OrdinalIgnoreCase)) is { } exact) return exact.Name;
+        string bare = id.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? id[..^4] : id;
+        string family = bare.Split('!')[0].Split('_')[0];      // packaged apps: Publisher.Name_hash!App
+        string first = bare.Split('.', '!', '_')[0];           // Win32: Chrome.UserData, Chrome._crx_…
+        foreach (var key in new[] { family, first, family.Split('.').Last() })
+            if (KnownSources.TryGetValue(key, out var known)) return known;
+        if (App.Apps.FirstOrDefault(a => a.ParsingName.StartsWith(family + "_", StringComparison.OrdinalIgnoreCase)
+                                         || Path.GetFileNameWithoutExtension(a.TargetPath ?? "").Equals(first, StringComparison.OrdinalIgnoreCase)) is { } app)
+            return app.Name;
+        string name = family.Contains('.') ? family.Split('.').Last() : first;
+        return name.Length > 0 ? char.ToUpperInvariant(name[0]) + name[1..] : id;
+    }
+
     /// <summary>Raised on the UI thread when the session, track or play state changes.</summary>
     public event Action? Changed;
 

@@ -732,6 +732,10 @@
       </Setter>
     </Style>
 
+    <Style TargetType="Image">
+      <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+    </Style>
+
     <Style TargetType="RadioButton">
       <Setter Property="Foreground" Value="{DynamicResource Text}"/>
       <Setter Property="Cursor" Value="Hand"/>

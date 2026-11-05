@@ -14,7 +14,13 @@ public static class SystemSearch
     public sealed record Hit(string Path, string Name, bool IsDir, DateTime Modified);
 
     /// <summary>Developer and app internals nobody searches for from the launcher.</summary>
-    static readonly string[] Noise = [@"\AppData\", @"\node_modules\", @"\.git\", @"\bin\Debug\", @"\bin\Release\", @"\obj\", @"\.cache\", @"\site-packages\", @"\__pycache__\", @"\.gradle\", @"\.nuget\"];
+    static readonly string[] Noise = [@"\AppData\", @"\node_modules\", @"\.git\", @"\bin\Debug\", @"\bin\Release\", @"\obj\", @"\.cache\", @"\site-packages\", @"\__pycache__\", @"\.gradle\", @"\.nuget\",
+        // Browser engines inside apps (Chromium, Electron, WebView2) leave these everywhere; nobody searches for them.
+        @"\blob_storage\", @"\Session Storage\", @"\Local Storage\", @"\Code Cache\", @"\GPUCache\", @"\DawnCache\", @"\DawnGraphiteCache\", @"\Service Worker\",
+        @"\Crashpad\", @"\IndexedDB\", @"\EBWebView\", @".WebView2\", @"\CacheStorage\", @"\shared_proto_db\", @"\VideoDecodeStats\", @"\GrShaderCache\", @"\ShaderCache\"];
+
+    /// <summary>A hit counts as noise when it sits in one of those folders or is one ("…\blob_storage").</summary>
+    static bool IsNoise(string path) => Noise.Any(n => (path + "\\").Contains(n, StringComparison.OrdinalIgnoreCase));
 
     public static List<Hit> Files(string query, int max, CancellationToken ct)
     {
@@ -44,7 +50,7 @@ public static class SystemSearch
             // ItemUrl is the real path ("file:C:/Users/…"); ItemPathDisplay would be Windows' translated folder names.
             if (r.GetValue(0) is not string url || !url.StartsWith("file:", StringComparison.OrdinalIgnoreCase)) continue;
             string path = Uri.UnescapeDataString(url[5..]).Replace('/', '\\');
-            if (Noise.Any(n => path.Contains(n, StringComparison.OrdinalIgnoreCase))) continue;
+            if (IsNoise(path)) continue;
             string name = r.GetValue(1) as string ?? System.IO.Path.GetFileName(path);
             bool dir = (r.GetValue(2) as string)?.Equals("Directory", StringComparison.OrdinalIgnoreCase) == true || Directory.Exists(path);
             DateTime mod = r.GetValue(3) is DateTime d ? d.ToLocalTime() : default;
@@ -67,6 +73,7 @@ public static class SystemSearch
                 foreach (var fsi in new DirectoryInfo(root).EnumerateFileSystemInfos("*" + q + "*", opts))
                 {
                     if (ct.IsCancellationRequested || hits.Count >= max) return hits;
+                    if (IsNoise(fsi.FullName)) continue;
                     hits.Add(new(fsi.FullName, fsi.Name, fsi is DirectoryInfo, fsi.LastWriteTime));
                 }
             }

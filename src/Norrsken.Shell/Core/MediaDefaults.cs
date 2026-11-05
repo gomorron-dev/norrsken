@@ -83,21 +83,52 @@ public static class MediaDefaults
         catch (Exception ex) { return (InstallState.Failed, ex.Message); }
     }
 
+    /// <summary>
+    /// Copies the bundled Flickerbox into Program Files. A running Flickerbox is closed first (its files would be
+    /// locked and the copy would fail half-way); an identical install is left alone; the result is checked.
+    /// </summary>
     static bool InstallFlickerbox(List<string> notes)
     {
-        if (File.Exists(Path.Combine(Bundled, "Flickerbox.exe")))
-        {
-            Directory.CreateDirectory(Dir);
-            using var rc = Process.Start(new ProcessStartInfo("robocopy", $"\"{Bundled}\" \"{Dir}\" /E /R:1 /W:1 /NP /NFL /NDL /NJH /NJS")
-            { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true })!;
-            rc.StandardOutput.ReadToEnd();
-            rc.WaitForExit();
-            if (rc.ExitCode >= 8) throw new IOException($"Copying Flickerbox failed (robocopy {rc.ExitCode}).");
-        }
-        else notes.Add("no apps\\Flickerbox folder");
+        string bundledExe = Path.Combine(Bundled, "Flickerbox.exe");
+        if (!File.Exists(bundledExe)) { notes.Add("no apps\\Flickerbox folder"); return File.Exists(Exe); }
+        if (!WebView2Installed()) notes.Add("the WebView2 runtime Flickerbox draws with is missing: install it from microsoft.com/edge/webview2");
+        if (File.Exists(Exe) && SameFile(Path.Combine(Bundled, "Flickerbox.dll"), Path.Combine(Dir, "Flickerbox.dll")) && SameFile(bundledExe, Exe))
+            return true; // already this version
+        foreach (var p in Process.GetProcessesByName("Flickerbox"))
+            try { if (p.MainModule?.FileName?.StartsWith(Dir, StringComparison.OrdinalIgnoreCase) != false) { p.CloseMainWindow(); if (!p.WaitForExit(3000)) p.Kill(); } } catch (Exception) { }
+        Directory.CreateDirectory(Dir);
+        using var rc = Process.Start(new ProcessStartInfo("robocopy", $"\"{Bundled}\" \"{Dir}\" /E /R:3 /W:1 /NP /NFL /NDL /NJH /NJS")
+        { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true })!;
+        rc.StandardOutput.ReadToEnd();
+        rc.WaitForExit();
+        if (rc.ExitCode >= 8) throw new IOException($"Copying Flickerbox failed (robocopy {rc.ExitCode}).");
+        if (!SameFile(Path.Combine(Bundled, "Flickerbox.dll"), Path.Combine(Dir, "Flickerbox.dll")))
+            throw new IOException("Flickerbox was copied but doesn't match the bundled version.");
         return File.Exists(Exe);
     }
 
+    static bool SameFile(string a, string b)
+    {
+        try
+        {
+            if (!File.Exists(a) || !File.Exists(b) || new FileInfo(a).Length != new FileInfo(b).Length) return false;
+            using var fa = File.OpenRead(a);
+            using var fb = File.OpenRead(b);
+            return System.Security.Cryptography.SHA256.HashData(fa).AsSpan().SequenceEqual(System.Security.Cryptography.SHA256.HashData(fb));
+        }
+        catch (Exception) { return false; }
+    }
+
+    /// <summary>Flickerbox's interface runs in Microsoft's WebView2 (part of Windows 11; missing on some stripped installs).</summary>
+    public static bool WebView2Installed()
+    {
+        foreach (var key in new[] { @"SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}", @"SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" })
+        {
+            if (Registry.LocalMachine.OpenSubKey(key)?.GetValue("pv") is string v && v.Length > 0 && v != "0.0.0.0") return true;
+            if (Registry.CurrentUser.OpenSubKey(key)?.GetValue("pv") is string u && u.Length > 0 && u != "0.0.0.0") return true;
+        }
+        return false;
+    }
     static RegistryKey Cls(string sub) => Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Classes\" + sub);
 
     static void RegisterFlickerbox()

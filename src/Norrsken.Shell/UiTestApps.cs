@@ -180,6 +180,9 @@ internal static partial class UiTest
         Check("taskmgr.lists", procGroups > 10, $"{procGroups} programs listed with live CPU and memory");
         tm.Close();
 
+        // ── Bin (a fake bin in the test folder: the real Recycle Bin is never touched) ──
+        await BinFlow();
+        await FlickerboxFlow();
         // ── Run, clipboard, overview, power, display mode ──
         RunWindow.Toggle();
         await Wait(500);
@@ -245,4 +248,119 @@ internal static partial class UiTest
         for (int i = 0; i < n; i++)
             foreach (var t in AllText(VisualTreeHelper.GetChild(root, i))) yield return t;
     }
-}
+
+    static async Task BinFlow()
+    {
+        string bin = Path.Combine(_out, "fakebin"), home = Path.Combine(_out, "binhome");
+        Directory.CreateDirectory(bin);
+        Directory.CreateDirectory(home);
+        int n = 0;
+        void Make(string original, string content, TimeSpan ago, bool folder = false)
+        {
+            string id = $"NRS{++n:D3}" + (folder ? "" : Path.GetExtension(original));
+            string data = Path.Combine(bin, "$R" + id), info = Path.Combine(bin, "$I" + id);
+            if (folder) { Directory.CreateDirectory(data); File.WriteAllText(Path.Combine(data, "inside.txt"), content); }
+            else File.WriteAllText(data, content);
+            using var w = new BinaryWriter(File.Create(info));
+            w.Write(2L); w.Write((long)content.Length); w.Write((DateTime.Now - ago).ToFileTime());
+            w.Write(original.Length + 1); w.Write(System.Text.Encoding.Unicode.GetBytes(original + "\0"));
+        }
+        Make(Path.Combine(home, "Docs", "report.txt"), "quarterly", TimeSpan.FromHours(30));      // its folder is gone
+        Make(Path.Combine(home, "notes.md"), "# notes", TimeSpan.FromSeconds(20));                   // these two were one delete…
+        Make(Path.Combine(home, "todo.txt"), "milk", TimeSpan.FromSeconds(19));                      // …so undo brings both
+        Make(Path.Combine(home, "old.log"), "ancient", TimeSpan.FromDays(40));
+        Make(Path.Combine(home, "Project"), "secret plans", TimeSpan.FromDays(2), folder: true);
+        Bin.TestRoot = bin;
+        int keepDays = App.Settings.BinAutoEmptyDays;
+        try
+        {
+            var items = Bin.List();
+            var win = new BinWindow();
+            win.Show();
+            await Wait(700);
+            win.TestSelectFirst();
+            await Wait(250);
+            Snap(win, "ui-49-bin");
+            Check("bin.list", items.Count == 5 && win.RowCount == 5, $"{items.Count} items read from $I files; {win.RowCount} rows grouped by day");
+
+            var report = items.First(i => i.Name == "report.txt");
+            string back = Bin.Restore(report);
+            Check("bin.restore-rebuilds-folder", File.ReadAllText(back) == "quarterly" && back == Path.Combine(home, "Docs", "report.txt") && !File.Exists(report.InfoPath),
+                $"put back at {Path.GetRelativePath(_out, back)}; the missing Docs folder was rebuilt");
+
+            var undone = Bin.UndoLastDelete();
+            Check("bin.undo-last-delete", undone.Count == 2 && File.Exists(Path.Combine(home, "notes.md")) && File.Exists(Path.Combine(home, "todo.txt")),
+                $"undo brought back {undone.Count} items deleted together: {string.Join(", ", undone.Select(Path.GetFileName))}");
+
+            var old = Bin.List().First(i => i.Name == "old.log");
+            Bin.SetKept(old, true);
+            App.Settings.BinAutoEmptyDays = 30;
+            int keptRun = Bin.AutoEmpty();
+            Bin.SetKept(old, false);
+            int freeRun = Bin.AutoEmpty();
+            Check("bin.keep-and-auto-empty", keptRun == 0 && freeRun == 1 && !File.Exists(old.DataPath),
+                $"kept item survived the 30-day clean-up ({keptRun} removed); once released it went ({freeRun} removed)");
+
+            var project = Bin.List().First(i => i.IsFolder);
+            Bin.DeleteForever(project, shred: true);
+            Check("bin.shred", !Directory.Exists(project.DataPath) && !File.Exists(project.InfoPath) && Bin.List().Count == 0,
+                "folder shredded (overwritten, then removed); the Bin is empty");
+            await Wait(500);
+            Snap(win, "ui-50-bin-empty");
+            win.Close();
+        }
+        finally
+        {
+            App.Settings.BinAutoEmptyDays = keepDays;
+            Bin.TestRoot = null;
+        }
+    }
+
+    // ── Flickerbox: starts, opens its window and draws (on this hidden desktop, like everything here) ──
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool EnumWindows(EnumProc cb, IntPtr l);
+    delegate bool EnumProc(IntPtr h, IntPtr l);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr h);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr h, out RECT r);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool PrintWindow(IntPtr h, IntPtr hdc, uint flags);
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)] struct RECT { public int L, T, R, B; }
+
+    static async Task FlickerboxFlow()
+    {
+        string bundled = Path.Combine(MediaDefaults.Bundled, "Flickerbox.exe");
+        string exe = File.Exists(bundled) ? bundled : MediaDefaults.Exe;
+        if (!File.Exists(exe)) { Info("flickerbox.run", "no Flickerbox build here to start"); return; }
+        Check("flickerbox.webview2", MediaDefaults.WebView2Installed(), "the WebView2 runtime Flickerbox draws with is installed");
+        var p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(exe)! })!;
+        try
+        {
+            IntPtr win = IntPtr.Zero;
+            for (int i = 0; i < 40 && win == IntPtr.Zero && !p.HasExited; i++)
+            {
+                await Wait(250);
+                EnumWindows((h, _) =>
+                {
+                    GetWindowThreadProcessId(h, out uint pid);
+                    if (pid == p.Id && IsWindowVisible(h) && GetWindowRect(h, out var r) && r.R - r.L > 300) { win = h; return false; }
+                    return true;
+                }, IntPtr.Zero);
+            }
+            await Wait(2500); // WebView2 and the interface load
+            bool alive = !p.HasExited;
+            int painted = 0;
+            if (win != IntPtr.Zero && GetWindowRect(win, out var rc))
+            {
+                int w = rc.R - rc.L, h = rc.B - rc.T;
+                using var bmp = new System.Drawing.Bitmap(w, h);
+                using (var g = System.Drawing.Graphics.FromImage(bmp)) { var hdc = g.GetHdc(); PrintWindow(win, hdc, 2 /* PW_RENDERFULLCONTENT */); g.ReleaseHdc(hdc); }
+                bmp.Save(Path.Combine(_out, "ui-51-flickerbox.png"), System.Drawing.Imaging.ImageFormat.Png);
+                // Count distinct-looking pixels on a grid: a blank or black window has almost none.
+                var seen = new HashSet<int>();
+                for (int y = 4; y < h; y += Math.Max(1, h / 40)) for (int x = 4; x < w; x += Math.Max(1, w / 40)) seen.Add(bmp.GetPixel(x, y).ToArgb() & 0xF0F0F0);
+                painted = seen.Count;
+            }
+            Check("flickerbox.run", alive && win != IntPtr.Zero && painted > 4,
+                $"{(exe == bundled ? "bundled" : "installed")} Flickerbox running {alive}; window found {win != IntPtr.Zero}; {painted} distinct colours drawn");
+        }
+        finally { try { if (!p.HasExited) p.Kill(true); } catch (Exception) { } }
+    }}

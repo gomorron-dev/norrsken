@@ -65,6 +65,7 @@ public partial class DockWindow : Window
         InitPreviews();
         ApplySettings();
         Loaded += (_, _) => Rise();
+        Loaded += (_, _) => StartBin();
     }
 
     // ───────────────────────── window plumbing ─────────────────────────
@@ -255,6 +256,7 @@ public partial class DockWindow : Window
     {
         var vis = App.Settings.ShowClock ? Visibility.Visible : Visibility.Collapsed;
         ClockCell.Visibility = Div2.Visibility = vis;
+        BinCell.Visibility = Div4.Visibility = App.Settings.ShowBinInDock ? Visibility.Visible : Visibility.Collapsed;
         UpdateClock();
         ScheduleClock();
         SetAppBarPos();
@@ -521,6 +523,11 @@ public partial class DockWindow : Window
         {
             list.Add(new(Div3, null, null, null));
             list.Add(new(MediaCell, null, () => _mediaLabel, null));
+        }
+        if (BinCell.Visibility == Visibility.Visible)
+        {
+            list.Add(new(Div4, null, null, null));
+            list.Add(new(BinCell, BinLift, () => _binLabel, null));
         }
         if (ClockCell.Visibility == Visibility.Visible)
         {
@@ -1012,6 +1019,117 @@ public partial class DockWindow : Window
         m.IsOpen = true;
     }
 
+    // ───────────────────────── the Bin ─────────────────────────
+
+    string _binLabel = "Bin";
+    int _binCount = -1;
+
+    void StartBin()
+    {
+        if (!App.TestMode) Bin.Watch();
+        Bin.Changed += UpdateBin;
+        UpdateBin();
+    }
+
+    async void UpdateBin()
+    {
+        var (count, bytes) = await Task.Run(Bin.Totals);
+        _binLabel = count == 0 ? "Bin" : $"Bin  ·  {count} item{(count == 1 ? "" : "s")}, {Bin.Size(bytes)}";
+        BinGlyph.Glyph = count == 0 ? "trash" : "trash-full";
+        BinBadge.Visibility = count == 0 ? Visibility.Collapsed : Visibility.Visible;
+        BinCount.Text = count > 99 ? "99+" : count.ToString(CultureInfo.CurrentCulture);
+        // Something just landed in the Bin (from anywhere: Files, Explorer, an app): it gulps.
+        if (_binCount >= 0 && count > _binCount && !Motion.Reduced) Gulp();
+        if (_binCount >= 0 && count != _binCount && count > 0) Motion.Pop(BinBadge, 0.6);
+        _binCount = count;
+    }
+
+    void Gulp()
+    {
+        Press(BinLift, true);
+        var t = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(110) };
+        t.Tick += (_, _) => { t.Stop(); Press(BinLift, false); };
+        t.Start();
+    }
+
+    void Bin_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == MouseButton.Left) Press(BinLift, true);
+        e.Handled = true;
+    }
+
+    void Bin_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        Press(BinLift, false);
+        if (e.ChangedButton == MouseButton.Left) { if (App.TestMode) App.TestLaunches.Add("bin"); else NorrskenApps.Launch("bin"); }
+        else if (e.ChangedButton == MouseButton.Right) ShowBinMenu();
+        e.Handled = true;
+    }
+
+    void ShowBinMenu()
+    {
+        var m = NewMenu(BinCell);
+        m.Items.Add(MenuTitle(_binLabel.Replace("  ·  ", ": ")));
+        m.Items.Add(new Separator());
+        m.Items.Add(MenuEntry("Open Bin", () => NorrskenApps.Launch("bin")));
+        int last = _binCount > 0 ? Bin.LastBatch().Count : 0;
+        var undo = MenuEntry(last <= 1 ? "Put back the last deleted item" : $"Put back the last {last} deleted items", async () =>
+        {
+            var back = await Task.Run(Bin.UndoLastDelete);
+            if (back.Count > 0) Bounce(BinLift);
+        });
+        undo.IsEnabled = last > 0;
+        m.Items.Add(undo);
+        var empty = MenuEntry("Empty Bin…", () => NorrskenApps.Launch("bin", "--empty"));
+        empty.IsEnabled = _binCount > 0;
+        m.Items.Add(empty);
+        m.Items.Add(new Separator());
+        m.Items.Add(MenuEntry("Remove Bin from the dock", () => { App.Settings.ShowBinInDock = false; App.Settings.Save(); ApplySettings(); }));
+        m.IsOpen = true;
+    }
+
+    static bool HasFiles(DragEventArgs e) => e.Data.GetDataPresent(DataFormats.FileDrop);
+
+    void Bin_DragEnter(object sender, DragEventArgs e)
+    {
+        e.Effects = HasFiles(e) ? DragDropEffects.Move : DragDropEffects.None;
+        if (HasFiles(e))
+        {
+            BinGlyph.Glyph = "trash-open";
+            var s = (ScaleTransform)BinTile.RenderTransform;
+            Motion.To(s, ScaleTransform.ScaleXProperty, 1.16, 260, Motion.Spring);
+            Motion.To(s, ScaleTransform.ScaleYProperty, 1.16, 260, Motion.Spring);
+        }
+        e.Handled = true;
+    }
+
+    void Bin_DragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = HasFiles(e) ? DragDropEffects.Move : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    void Bin_DragLeave(object sender, DragEventArgs e) => BinRest();
+
+    void BinRest()
+    {
+        BinGlyph.Glyph = _binCount > 0 ? "trash-full" : "trash";
+        var s = (ScaleTransform)BinTile.RenderTransform;
+        Motion.To(s, ScaleTransform.ScaleXProperty, 1, 320, Motion.Spring);
+        Motion.To(s, ScaleTransform.ScaleYProperty, 1, 320, Motion.Spring);
+    }
+
+    async void Bin_Drop(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        BinRest();
+        if (e.Data.GetData(DataFormats.FileDrop) is not string[] paths || paths.Length == 0) return;
+        Gulp();
+        if (App.TestMode) { App.TestLaunches.Add("bin-drop:" + paths.Length); return; }
+        var hwnd = _hwnd;
+        await Files.RunSta(() => Files.Recycle(hwnd, paths));
+    }
+
     void Launcher_MouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton == MouseButton.Left) Press(LauncherLift, true);
@@ -1058,8 +1176,7 @@ public partial class DockWindow : Window
         if (state != null)
         {
             _mediaSource = state.SourceAppId;
-            string source = App.Apps.FirstOrDefault(a => a.ParsingName.Equals(state.SourceAppId, StringComparison.OrdinalIgnoreCase))?.Name
-                            ?? Path.GetFileNameWithoutExtension(state.SourceAppId);
+            string source = MediaController.SourceName(state.SourceAppId);
             MediaTitle.Text = state.Title;
             MediaArtist.Text = state.Artist.Length > 0 ? state.Artist : source;
             _mediaLabel = state.Artist.Length > 0 ? $"{state.Title} · {state.Artist}" : state.Title;

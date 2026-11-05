@@ -66,6 +66,7 @@ public static class Showcase
         Do("settings.png", () => WindowShot(new SettingsWindow(null), 1000, 680, dusk), 1080, 760);
         Do("themes.png", Themes, 1200, 560);
         Do("social.png", () => Social(dusk), 1280, 640);
+        Do("bin.png", () => BinShot(dusk), 1080, 700);
         Do("logo.png", () => Logo(512), 512, 512);
         Theme.Apply("paper");
         Do("hero-light.png", () => Hero(paper), 1600, 1000);
@@ -76,6 +77,43 @@ public static class Showcase
     }
 
     // ───────────────────────── scenes ─────────────────────────
+
+    /// <summary>The Bin with demo items in a throwaway bin folder (never the real Recycle Bin).</summary>
+    static FrameworkElement BinShot(Brush wall)
+    {
+        string bin = Path.Combine(Path.GetTempPath(), "norrsken-showcase-bin");
+        if (Directory.Exists(bin)) Directory.Delete(bin, true);
+        Directory.CreateDirectory(bin);
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string pics = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        var demo = new (string Path, long Size, TimeSpan Ago)[]
+        {
+            (Path.Combine(pics, "Lofoten 2026", "aurora-0412.jpg"), 6_400_000, TimeSpan.FromMinutes(4)),
+            (Path.Combine(pics, "Lofoten 2026", "aurora-0413.jpg"), 6_100_000, TimeSpan.FromMinutes(4)),
+            (Path.Combine(docs, "Drafts", "talk-notes-old.md"), 18_000, TimeSpan.FromHours(3)),
+            (Path.Combine(home, "Downloads", "setup-1.4.2.exe"), 92_000_000, TimeSpan.FromHours(26)),
+            (Path.Combine(docs, "Invoices", "2025"), 3_200_000, TimeSpan.FromDays(3)),
+            (Path.Combine(home, "Downloads", "screen-recording.mp4"), 412_000_000, TimeSpan.FromDays(12)),
+        };
+        int n = 0;
+        foreach (var (p, size, ago) in demo)
+        {
+            string id = $"SHW{++n:D3}" + Path.GetExtension(p);
+            bool folder = Path.GetExtension(p).Length == 0;
+            string data = Path.Combine(bin, "$R" + id);
+            if (folder) Directory.CreateDirectory(data); else File.WriteAllText(data, "demo");
+            using var w = new BinaryWriter(File.Create(Path.Combine(bin, "$I" + id)));
+            w.Write(2L); w.Write(size); w.Write((DateTime.Now - ago).ToFileTime());
+            w.Write(p.Length + 1); w.Write(System.Text.Encoding.Unicode.GetBytes(p + "\0"));
+        }
+        Bin.TestRoot = bin;
+        var window = new BinWindow();
+        var shot = WindowShot(window, 1000, 620, wall);
+        window.Refresh();
+        window.TestSelectFirst();
+        Bin.TestRoot = null;
+        return shot;
+    }
 
     static FrameworkElement Hero(Brush wall)
     {

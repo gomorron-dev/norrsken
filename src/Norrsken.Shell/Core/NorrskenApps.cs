@@ -24,6 +24,7 @@ public static class NorrskenApps
         new("settings", "Norrsken.Settings", "Settings", "settings", "Norrsken and Windows settings"),
         new("terminal", "Norrsken.Terminal", "Terminal", "terminal", "PowerShell, Command Prompt and more"),
         new("taskmgr", "Norrsken.TaskManager", "Task Manager", "activity", "See and stop running apps"),
+        new("bin", "Norrsken.Bin", "Bin", "trash", "Deleted files: put back, keep or shred"),
     ];
 
     /// <summary>Windows apps that Norrsken replaces: hidden from the launcher, removed on Norrsken OS.</summary>
@@ -83,6 +84,7 @@ public static class NorrskenApps
             case "notes": new Ui.NotesWindow(arg).Show(); break;
             case "settings": new Ui.SettingsWindow(null).Show(); break;
             case "taskmgr": new Ui.TaskManagerWindow().Show(); break;
+            case "bin": Bin.Watch(); Ui.BinWindow.Open(arg == "--empty"); break;
             case "terminal":
                 if (arg == "--admin" && !Unelevated.IsElevated)
                 {
