@@ -16,7 +16,7 @@
     .\release.ps1 -Notes "Smoother dock, Chrome title bars fixed"
 #>
 [CmdletBinding()]
-param([string] $Notes = '', [switch] $SkipBuild)
+param([string] $Notes = '', [string] $NotesFile = '', [switch] $SkipBuild)
 $ErrorActionPreference = 'Stop'
 $repo = 'gomorron-dev/norrsken'
 if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { throw 'The GitHub CLI is missing: winget install GitHub.cli, then gh auth login.' }
@@ -42,7 +42,9 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 Write-Host "   $([math]::Round((Get-Item $zip).Length / 1MB)) MB"
 
 Write-Host "== Publishing $tag to github.com/$repo"
+if ($NotesFile) { $Notes = [IO.File]::ReadAllText((Resolve-Path $NotesFile)) } # quotes and line breaks survive a file, not a command line
 if (-not $Notes) { $Notes = "Norrsken $version" }
-gh release create $tag $zip --repo $repo --title "Norrsken $version" --notes $Notes
+$notesPath = Join-Path $out "notes-$version.md"; [IO.File]::WriteAllText($notesPath, $Notes, (New-Object Text.UTF8Encoding($false)))
+gh release create $tag $zip --repo $repo --title "Norrsken $version" --notes-file $notesPath
 if ($LASTEXITCODE -ne 0) { throw 'gh release create failed' }
 Write-Host "== Done: installed copies pick up $tag on their next check."
