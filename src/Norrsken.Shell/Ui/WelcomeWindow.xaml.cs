@@ -183,7 +183,7 @@ public partial class WelcomeWindow : Window
     {
         var tile = new Border
         {
-            Width = 30, Height = 30, CornerRadius = new CornerRadius(9), BorderThickness = new Thickness(1.5),
+            Width = 30, Height = 30, CornerRadius = Theme.R(9), BorderThickness = new Thickness(1.5),
             Child = new TextBlock
             {
                 Text = app.Monogram, FontWeight = FontWeights.SemiBold, FontSize = 13,

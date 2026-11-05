@@ -75,7 +75,7 @@ public partial class SettingsWindow : Window
         if (!Directory.Exists(dir)) { WallpaperList.Children.Add(new TextBlock { Text = "Norrsken wallpapers are installed with Norrsken OS.", Style = (Style)FindResource("Note") }); return; }
         foreach (var file in Directory.EnumerateFiles(dir, "*.png").Order())
         {
-            var thumb = new Border { Width = 132, Height = 76, CornerRadius = new CornerRadius(10), ClipToBounds = true };
+            var thumb = new Border { Width = 132, Height = 76, CornerRadius = Theme.R(10), ClipToBounds = true };
             var b = new Button { Margin = new Thickness(0, 0, 10, 10), Cursor = System.Windows.Input.Cursors.Hand, Template = WallTemplate(), Content = thumb, ToolTip = Path.GetFileNameWithoutExtension(file).Replace("norrsken-", "") };
             b.Click += (_, _) =>
             {
@@ -99,7 +99,7 @@ public partial class SettingsWindow : Window
     {
         var t = new ControlTemplate(typeof(Button));
         var bd = new FrameworkElementFactory(typeof(Border)) { Name = "Bd" };
-        bd.SetValue(Border.CornerRadiusProperty, new CornerRadius(12));
+        bd.SetValue(Border.CornerRadiusProperty, Theme.R(12));
         bd.SetValue(Border.BorderThicknessProperty, new Thickness(2));
         bd.SetValue(Border.BorderBrushProperty, Brushes.Transparent);
         bd.SetValue(Border.PaddingProperty, new Thickness(2));
@@ -119,7 +119,7 @@ public partial class SettingsWindow : Window
         var tile = new Grid { Width = 118, Height = 78 };
         tile.Children.Add(new Border
         {
-            CornerRadius = new CornerRadius(12), Background = backdrop,
+            CornerRadius = Theme.R(12), Background = backdrop,
             BorderBrush = new SolidColorBrush(Color.FromArgb(48, 128, 128, 128)), BorderThickness = new Thickness(1),
         });
         var dots = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
@@ -131,7 +131,7 @@ public partial class SettingsWindow : Window
             });
         tile.Children.Add(new Border
         {
-            Width = 74, Height = 18, CornerRadius = new CornerRadius(9), Background = new SolidColorBrush(dock),
+            Width = 74, Height = 18, CornerRadius = Theme.R(9), Background = new SolidColorBrush(dock),
             BorderBrush = new SolidColorBrush(Color.FromArgb(40, text.R, text.G, text.B)), BorderThickness = new Thickness(1),
             VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, 9), Child = dots,
         });

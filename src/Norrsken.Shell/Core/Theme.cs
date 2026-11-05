@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Media;
 
 namespace Norrsken.Shell.Core;
@@ -118,6 +118,58 @@ public static class Theme
         res["ShadowColor"] = Colors.Black;
         res["ShadowOpacity"] = ShadowOpacity[id];
         Current = id;
+        ApplyLook(res);
+    }
+
+    /// <summary>Accent colours to pick from. Empty keeps Norrsken's monochrome look (the accent is the text colour).</summary>
+    public static readonly (string Id, string Name, string Hex)[] Accents =
+    [
+        ("", "None (monochrome)", ""), ("aurora", "Aurora", "#3DDC97"), ("glacier", "Glacier", "#4CA8FF"), ("violet", "Violet", "#9D7CFF"),
+        ("rose", "Rose", "#FF6B9A"), ("ember", "Ember", "#FF8A3D"), ("gold", "Gold", "#F2C14E"), ("mint", "Mint", "#5EEAD4"), ("crimson", "Crimson", "#E5484D"),
+    ];
+
+    static readonly double[] Radii = [0, 1, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 21, 22, 23, 24];
+
+    /// <summary>A corner radius in the user's shape (square … extra round), for code-built UI.</summary>
+    public static CornerRadius R(double n) => new(n * Math.Clamp(App.Settings.CornerScale, 0, 2));
+
+    public static Color? AccentColor()
+    {
+        string a = App.Settings.Accent ?? "";
+        if (a.Length == 0) return null;
+        string hex = Accents.FirstOrDefault(x => x.Id == a).Hex ?? a;
+        if (hex is null or "") hex = a;
+        try { return (Color)ColorConverter.ConvertFromString(hex); } catch (Exception) { return null; }
+    }
+
+    /// <summary>The user's look on top of the theme: accent, corner shape, dock glass.</summary>
+    public static void ApplyLook(ResourceDictionary? res = null)
+    {
+        res ??= Application.Current.Resources;
+        var s = App.Settings;
+        Brush Frozen(Color c) { var b = new SolidColorBrush(c); b.Freeze(); return b; }
+        var text = (res["Text"] as SolidColorBrush)?.Color ?? Colors.White;
+        var solid = (res["SurfaceSolid"] as SolidColorBrush)?.Color ?? Colors.Black;
+        if (AccentColor() is { } accent)
+        {
+            double luma = (0.299 * accent.R + 0.587 * accent.G + 0.114 * accent.B) / 255;
+            res["Accent"] = Frozen(accent);
+            res["AccentText"] = Frozen(luma > 0.62 ? Color.FromRgb(16, 16, 18) : Colors.White);
+            res["Dot"] = Frozen(Color.FromArgb(0xE6, accent.R, accent.G, accent.B));
+            res["Selection"] = Frozen(Color.FromArgb(0x38, accent.R, accent.G, accent.B));
+        }
+        else
+        {
+            res["Accent"] = Frozen(text);
+            res["AccentText"] = Frozen(solid);
+        }
+        double k = Math.Clamp(s.CornerScale, 0, 2);
+        foreach (var r in Radii) res["R" + r.ToString(System.Globalization.CultureInfo.InvariantCulture).Replace('.', '_')] = new CornerRadius(r * k);
+        if (res["DockBg"] is SolidColorBrush dock && s.DockOpacity < 0.999)
+        {
+            var c = dock.Color;
+            res["DockBg"] = Frozen(Color.FromArgb((byte)Math.Clamp(c.A * s.DockOpacity, 40, 255), c.R, c.G, c.B));
+        }
     }
 
     /// <summary>Colours for the theme picker's preview tiles (dock fill, window surface, foreground).</summary>

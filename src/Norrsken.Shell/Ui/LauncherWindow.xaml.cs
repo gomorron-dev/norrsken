@@ -292,7 +292,7 @@ public partial class LauncherWindow : Window
         count.SetResourceReference(TextBlock.ForegroundProperty, "TextDim");
         var stack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
         stack.Children.Add(grid); stack.Children.Add(label); stack.Children.Add(count);
-        var tile = new Border { Width = 148, Height = 160, Margin = new Thickness(4), CornerRadius = new CornerRadius(18), Child = stack, Cursor = Cursors.Hand, BorderThickness = new Thickness(1) };
+        var tile = new Border { Width = 148, Height = 160, Margin = new Thickness(4), CornerRadius = Theme.R(18), Child = stack, Cursor = Cursors.Hand, BorderThickness = new Thickness(1) };
         tile.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
         tile.SetResourceReference(Border.BorderBrushProperty, "Border");
         tile.MouseEnter += (_, _) => tile.SetResourceReference(Border.BackgroundProperty, "Hover");
@@ -453,7 +453,7 @@ public partial class LauncherWindow : Window
         var dock = new DockPanel();
         dock.Children.Add(icon);
         dock.Children.Add(text);
-        var row = new Border { CornerRadius = new CornerRadius(12), Padding = new Thickness(12, big ? 10 : 7, 12, big ? 10 : 7), Margin = new Thickness(0, 1, 0, 1), Child = dock, Cursor = Cursors.Hand, Background = Brushes.Transparent };
+        var row = new Border { CornerRadius = Theme.R(12), Padding = new Thickness(12, big ? 10 : 7, 12, big ? 10 : 7), Margin = new Thickness(0, 1, 0, 1), Child = dock, Cursor = Cursors.Hand, Background = Brushes.Transparent };
         row.MouseEnter += (_, _) => { if (_rows.IndexOf(row) != _selected) row.SetResourceReference(Border.BackgroundProperty, "Hover"); };
         row.MouseLeave += (_, _) => { if (_rows.IndexOf(row) != _selected) row.Background = Brushes.Transparent; };
         row.MouseLeftButtonUp += (_, _) => OpenResult(r);

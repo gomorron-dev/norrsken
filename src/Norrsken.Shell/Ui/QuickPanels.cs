@@ -23,7 +23,7 @@ public abstract class CardWindow : Window
         ShowInTaskbar = false; Topmost = true; SizeToContent = SizeToContent.Height; Width = width + 48;
         FontFamily = (FontFamily)Application.Current.FindResource("UiFont");
         Card.Margin = new Thickness(24);
-        Card.CornerRadius = new CornerRadius(20);
+        Card.CornerRadius = Theme.R(20);
         Card.BorderThickness = new Thickness(1);
         Card.SetResourceReference(Border.BackgroundProperty, "Surface");
         Card.SetResourceReference(Border.BorderBrushProperty, "DockLine");
@@ -117,7 +117,7 @@ public sealed class RunWindow : CardWindow
         head.Children.Add(g);
         head.Children.Add(Text("Run", 15, bold: true));
         stack.Children.Add(head);
-        var field = new Border { CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(1), Height = 44, Padding = new Thickness(14, 0, 14, 0) };
+        var field = new Border { CornerRadius = Theme.R(12), BorderThickness = new Thickness(1), Height = 44, Padding = new Thickness(14, 0, 14, 0) };
         field.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
         field.SetResourceReference(Border.BorderBrushProperty, "Border");
         _box.Style = (Style)FindResource("PlainTextBox");
@@ -183,7 +183,7 @@ public sealed class RunWindow : CardWindow
         for (int i = 0; i < _items.Count; i++)
         {
             string s = _items[i];
-            var row = new Border { CornerRadius = new CornerRadius(9), Padding = new Thickness(12, 6, 12, 6), Cursor = Cursors.Hand, Child = Text(s, 13), Background = Brushes.Transparent };
+            var row = new Border { CornerRadius = Theme.R(9), Padding = new Thickness(12, 6, 12, 6), Cursor = Cursors.Hand, Child = Text(s, 13), Background = Brushes.Transparent };
             if (i == _selected) row.SetResourceReference(Border.BackgroundProperty, "Selection");
             row.MouseEnter += (_, _) => { if (_suggest.Children.IndexOf(row) != _selected) row.SetResourceReference(Border.BackgroundProperty, "Hover"); };
             row.MouseLeave += (_, _) => { if (_suggest.Children.IndexOf(row) != _selected) row.Background = Brushes.Transparent; };

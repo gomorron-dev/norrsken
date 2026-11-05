@@ -22,6 +22,7 @@ public static class Switches
 
     static void Settle(CheckBox box)
     {
+        if (box.Style != Application.Current.TryFindResource("Toggle")) return; // only Norrsken switches
         if (box.Template?.FindName("Thumb", box) is not FrameworkElement { RenderTransform: TranslateTransform shift }) return;
         if (box.IsChecked != true) return;
         shift.BeginAnimation(TranslateTransform.XProperty, null); // drop the on-load slide…

@@ -75,7 +75,7 @@ internal sealed class AudioEndpoint : IDisposable
     {
         try
         {
-            var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
+            var enumerator = (IMMDeviceEnumerator)Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("BCDE0395-E52F-467C-8E3D-C4579291692E"))!)!;
             if (enumerator.GetDefaultAudioEndpoint(eRender, eMultimedia, out var device) != 0) return null;
             var iid = typeof(IAudioEndpointVolume).GUID;
             return device.Activate(ref iid, CLSCTX_ALL, IntPtr.Zero, out object o) == 0

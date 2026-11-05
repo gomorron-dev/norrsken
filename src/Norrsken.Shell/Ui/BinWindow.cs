@@ -256,7 +256,7 @@ public sealed class BinWindow : Window
         Grid.SetColumn(actions, 4);
         grid.Children.Add(actions);
 
-        var row = new Border { CornerRadius = new CornerRadius(10), Padding = new Thickness(8, 7, 8, 7), Margin = new Thickness(0, 1, 0, 1), Background = Brushes.Transparent, Child = grid, Tag = item };
+        var row = new Border { CornerRadius = Theme.R(10), Padding = new Thickness(8, 7, 8, 7), Margin = new Thickness(0, 1, 0, 1), Background = Brushes.Transparent, Child = grid, Tag = item };
         void Paint()
         {
             bool sel = _selected.Contains(item.Id);
@@ -375,7 +375,7 @@ public sealed class BinWindow : Window
         }
 
         var item = sel[0];
-        var art = new Border { Height = 150, CornerRadius = new CornerRadius(12), Margin = new Thickness(0, 4, 0, 16), ClipToBounds = true };
+        var art = new Border { Height = 150, CornerRadius = Theme.R(12), Margin = new Thickness(0, 4, 0, 16), ClipToBounds = true };
         art.SetResourceReference(Border.BackgroundProperty, "SurfaceSolid");
         ImageSource? thumb = item.IsFolder ? null : ShellIcons.Thumbnail(item.DataPath, 256);
         art.Child = thumb != null
@@ -583,7 +583,7 @@ public sealed class BinWindow : Window
 
     FrameworkElement SearchBox()
     {
-        var box = new Border { CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Width = 220, Height = 32, Padding = new Thickness(10, 0, 10, 0) };
+        var box = new Border { CornerRadius = Theme.R(10), BorderThickness = new Thickness(1), Width = 220, Height = 32, Padding = new Thickness(10, 0, 10, 0) };
         box.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
         box.SetResourceReference(Border.BorderBrushProperty, "Border");
         _search.Style = (Style)FindResource("PlainTextBox");

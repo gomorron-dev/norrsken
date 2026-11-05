@@ -15,10 +15,43 @@ public static class Motion
 
     public static bool Reduced => ForceInstant || App.Settings.ReduceMotion || !SystemParameters.ClientAreaAnimation;
 
-    public static readonly IEasingFunction Out = Frozen(new CubicEase { EasingMode = EasingMode.EaseOut });
-    public static readonly IEasingFunction InOut = Frozen(new CubicEase { EasingMode = EasingMode.EaseInOut });
-    public static readonly IEasingFunction Spring = Frozen(new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.35 });
-    public static readonly IEasingFunction SoftSpring = Frozen(new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.18 });
+    // The motion style (Settings › Personalisation › Motion) picks the curves; every animation asks for them by role.
+    static IEasingFunction _out = Frozen(new CubicEase { EasingMode = EasingMode.EaseOut });
+    static IEasingFunction _inOut = Frozen(new CubicEase { EasingMode = EasingMode.EaseInOut });
+    static IEasingFunction _spring = Frozen(new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.35 });
+    static IEasingFunction _softSpring = Frozen(new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.18 });
+    static string _style = "";
+
+    public static IEasingFunction Out { get { Sync(); return _out; } }
+    public static IEasingFunction InOut { get { Sync(); return _inOut; } }
+    public static IEasingFunction Spring { get { Sync(); return _spring; } }
+    public static IEasingFunction SoftSpring { get { Sync(); return _softSpring; } }
+
+    /// <summary>Duration multiplier from Settings (0.6 brisk … 1.5 relaxed); "snappy" shortens a little more.</summary>
+    public static double Scale => Math.Clamp(App.Settings.AnimationScale, 0.3, 3) * (App.Settings.MotionStyle == "snappy" ? 0.8 : 1);
+
+    public static int Ms(int ms) => (int)Math.Round(ms * Scale);
+
+    static void Sync()
+    {
+        string style = App.Settings.MotionStyle ?? "natural";
+        if (style == _style) return;
+        _style = style;
+        (_out, _inOut, _spring, _softSpring) = style switch
+        {
+            // Bouncier: springs overshoot more, so things land with a little wobble.
+            "springy" => (Frozen(new CubicEase { EasingMode = EasingMode.EaseOut }), Frozen(new CubicEase { EasingMode = EasingMode.EaseInOut }),
+                          Frozen(new ElasticEase { EasingMode = EasingMode.EaseOut, Oscillations = 1, Springiness = 4 }), Frozen(new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.45 })),
+            // No overshoot anywhere: long, soft decelerations.
+            "smooth" => (Frozen(new QuinticEase { EasingMode = EasingMode.EaseOut }), Frozen(new SineEase { EasingMode = EasingMode.EaseInOut }),
+                         Frozen(new QuinticEase { EasingMode = EasingMode.EaseOut }), Frozen(new QuinticEase { EasingMode = EasingMode.EaseOut })),
+            // Crisp: fast starts, a hint of spring.
+            "snappy" => (Frozen(new QuarticEase { EasingMode = EasingMode.EaseOut }), Frozen(new QuadraticEase { EasingMode = EasingMode.EaseInOut }),
+                         Frozen(new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.2 }), Frozen(new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.1 })),
+            _ => (Frozen(new CubicEase { EasingMode = EasingMode.EaseOut }), Frozen(new CubicEase { EasingMode = EasingMode.EaseInOut }),
+                  Frozen(new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.35 }), Frozen(new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.18 })),
+        };
+    }
 
     static IEasingFunction Frozen(EasingFunctionBase e) { e.Freeze(); return e; }
 
@@ -38,12 +71,12 @@ public static class Motion
         foreach (var el in items)
         {
             if (i >= max || Reduced) break;
-            var delay = TimeSpan.FromMilliseconds(startMs + i * stepMs);
+            var delay = TimeSpan.FromMilliseconds(Ms(startMs + i * stepMs));
             var shift = el.RenderTransform as TranslateTransform;
             if (shift == null && (el.RenderTransform == null || el.RenderTransform == Transform.Identity))
                 el.RenderTransform = shift = new TranslateTransform();
-            el.BeginAnimation(UIElement.OpacityProperty, Delayed(0, 1, delay, ms * 2 / 3));
-            shift?.BeginAnimation(TranslateTransform.YProperty, Delayed(rise, 0, delay, ms));
+            el.BeginAnimation(UIElement.OpacityProperty, Delayed(0, 1, delay, Ms(ms * 2 / 3)));
+            shift?.BeginAnimation(TranslateTransform.YProperty, Delayed(rise, 0, delay, Ms(ms)));
             i++;
         }
     }
@@ -79,7 +112,7 @@ public static class Motion
             done?.Invoke();
             return;
         }
-        var a = new DoubleAnimation { To = to, Duration = TimeSpan.FromMilliseconds(ms), EasingFunction = ease ?? Out };
+        var a = new DoubleAnimation { To = to, Duration = TimeSpan.FromMilliseconds(Ms(ms)), EasingFunction = ease ?? Out };
         if (from is double f) a.From = f;
         if (done != null) a.Completed += (_, _) => done();
         target.BeginAnimation(dp, a);

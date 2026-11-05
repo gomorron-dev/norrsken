@@ -10,7 +10,7 @@
 
       <!-- 1 · Hello -->
       <StackPanel x:Name="HelloStep" VerticalAlignment="Center">
-        <Border Width="64" Height="64" CornerRadius="18" Background="{DynamicResource Text}" HorizontalAlignment="Left">
+        <Border Width="64" Height="64" CornerRadius="{DynamicResource R18}" Background="{DynamicResource Text}" HorizontalAlignment="Left">
           <Viewbox Margin="14">
             <Canvas Width="24" Height="24">
               <Path Data="M3,14 C6,4 10,4 12,9.5 C14,15 18,15 21,5" Stroke="{DynamicResource SurfaceSolid}"
@@ -101,8 +101,8 @@
                      Text="You can start using Norrsken now — installs keep going in the background."/>
         </StackPanel>
         <Grid Grid.Row="1" Height="4" Margin="0,24,0,0">
-          <Border CornerRadius="2" Background="{DynamicResource Pressed}"/>
-          <Border x:Name="ProgressFill" CornerRadius="2" Background="{DynamicResource Text}" HorizontalAlignment="Left" Width="0"/>
+          <Border CornerRadius="{DynamicResource R2}" Background="{DynamicResource Pressed}"/>
+          <Border x:Name="ProgressFill" CornerRadius="{DynamicResource R2}" Background="{DynamicResource Accent}" HorizontalAlignment="Left" Width="0"/>
         </Grid>
         <ScrollViewer Grid.Row="2" Margin="0,16,0,0" VerticalScrollBarVisibility="Auto" Focusable="False">
           <ItemsControl x:Name="InstallList" ItemTemplate="{StaticResource TaskRow}" Margin="0,0,12,0" Focusable="False"/>

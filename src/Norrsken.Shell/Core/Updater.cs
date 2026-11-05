@@ -103,7 +103,7 @@ public static class Updater
         if (!Unelevated.IsElevated) psi.Verb = "runas"; // Program Files needs administrator rights
         Process.Start(psi);
         Log.Write($"Updating to Norrsken {rel.Version}");
-        Application.Current.Dispatcher.BeginInvoke(() => App.Quit());
+        _ = Application.Current.Dispatcher.BeginInvoke(() => App.Quit());
     }
 
     /// <summary>`--apply-update target pid`, run from the unpacked release.</summary>
@@ -119,7 +119,7 @@ public static class Updater
                 if (path == null || path.StartsWith(source, StringComparison.OrdinalIgnoreCase)) continue;
                 if (name == "Flickerbox" || path.StartsWith(target, StringComparison.OrdinalIgnoreCase)) { try { p.Kill(); p.WaitForExit(5000); } catch (Exception) { } }
             }
-        using (var rc = Process.Start(new ProcessStartInfo("robocopy", $"\"{source}\" \"{target}\" /MIR /R:3 /W:1 /NP /NFL /NDL /NJH /NJS")
+        using (var rc = Process.Start(new ProcessStartInfo("robocopy", $"\"{source}\" \"{target}\" /MIR /XD sfx /R:3 /W:1 /NP /NFL /NDL /NJH /NJS")
                { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true })!)
         {
             rc.StandardOutput.ReadToEnd();

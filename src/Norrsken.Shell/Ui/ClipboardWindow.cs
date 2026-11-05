@@ -86,7 +86,7 @@ public sealed class ClipboardWindow : CardWindow
             var row = new DockPanel();
             if (e.Pinned) { var pin = Text("Pinned", 10.5, dim: true); DockPanel.SetDock(pin, Dock.Right); pin.Margin = new Thickness(8, 0, 0, 0); row.Children.Add(pin); }
             row.Children.Add(content);
-            var card = new Border { CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 9, 12, 9), Margin = new Thickness(0, 0, 0, 4), Child = row, Cursor = Cursors.Hand, BorderThickness = new Thickness(1) };
+            var card = new Border { CornerRadius = Theme.R(12), Padding = new Thickness(12, 9, 12, 9), Margin = new Thickness(0, 0, 0, 4), Child = row, Cursor = Cursors.Hand, BorderThickness = new Thickness(1) };
             card.SetResourceReference(Border.BackgroundProperty, i == _selected ? "Selection" : "SurfaceAlt");
             card.SetResourceReference(Border.BorderBrushProperty, i == _selected ? "TextDim" : "Border");
             int index = i;

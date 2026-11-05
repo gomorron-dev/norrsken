@@ -179,6 +179,7 @@ public partial class QuickSettingsWindow : Window
     void Volume_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         VolumeText.Text = $"{Math.Round(e.NewValue)}";
+        if (!_updating) Sound.Play("volume");
         if (_updating) return;
         SystemStatus.Volume = e.NewValue;
         if (SystemStatus.Muted && e.NewValue > 0) SystemStatus.Muted = false;

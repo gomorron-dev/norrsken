@@ -102,13 +102,17 @@ public static class NorrskenApps
     }
 
     /// <summary>App processes repaint live when the theme changes in the dock.</summary>
-    static void FollowThemeChanges()
+    /// <summary>
+    /// App windows (Files, Bin, Settings in its own process, Norrsken Capture) follow the dock's look and sounds live:
+    /// the theme, accent, corners, motion and sound settings, not just the theme's name.
+    /// </summary>
+    internal static void FollowThemeChanges()
     {
         var ev = new EventWaitHandle(false, EventResetMode.ManualReset, ThemeEventName);
         var dispatcher = Application.Current.Dispatcher;
         new Thread(() =>
         {
-            string last = App.Settings.Theme;
+            string last = App.Settings.LookKey;
             while (true)
             {
                 ev.WaitOne();
@@ -116,9 +120,9 @@ public static class NorrskenApps
                 dispatcher.BeginInvoke(() =>
                 {
                     var s = ShellSettings.Load();
-                    if (s.Theme == last) return;
-                    last = s.Theme;
-                    App.Settings.Theme = s.Theme;
+                    if (s.LookKey == last) return;
+                    last = s.LookKey;
+                    App.Settings.TakeLook(s);
                     Theme.Apply(s.Theme);
                 });
                 Thread.Sleep(600);

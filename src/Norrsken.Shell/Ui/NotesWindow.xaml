@@ -6,7 +6,7 @@
         WindowStyle="None" ResizeMode="CanResize" WindowStartupLocation="CenterScreen" AllowDrop="True"
         Background="{DynamicResource SurfaceSolid}" FontFamily="{StaticResource UiFont}">
   <WindowChrome.WindowChrome>
-    <WindowChrome CaptionHeight="44" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
+    <WindowChrome CaptionHeight="44" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="{DynamicResource R0}" UseAeroCaptionButtons="False"/>
   </WindowChrome.WindowChrome>
 
   <Border x:Name="Root" Background="{DynamicResource SurfaceSolid}" BorderBrush="{DynamicResource Border}" BorderThickness="1"
@@ -40,7 +40,7 @@
       </Grid>
 
       <!-- Find / replace bar -->
-      <Border x:Name="FindBar" Grid.Row="1" Visibility="Collapsed" Margin="12,0,12,8" Padding="10,6" CornerRadius="12"
+      <Border x:Name="FindBar" Grid.Row="1" Visibility="Collapsed" Margin="12,0,12,8" Padding="10,6" CornerRadius="{DynamicResource R12}"
               Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1">
         <StackPanel>
           <DockPanel>
@@ -89,7 +89,7 @@
 
       <!-- Unsaved-changes prompt -->
       <Grid x:Name="Prompt" Grid.RowSpan="4" Visibility="Collapsed" Background="#66000000">
-        <Border x:Name="PromptCard" Width="380" CornerRadius="16" Padding="22" Background="{DynamicResource SurfaceSolid}"
+        <Border x:Name="PromptCard" Width="380" CornerRadius="{DynamicResource R16}" Padding="22" Background="{DynamicResource SurfaceSolid}"
                 BorderBrush="{DynamicResource DockLine}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
           <StackPanel>
             <TextBlock x:Name="PromptTitle" FontFamily="{StaticResource DisplayFont}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap"/>

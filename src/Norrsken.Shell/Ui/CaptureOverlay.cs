@@ -32,7 +32,7 @@ public sealed class CaptureOverlay : Window
     readonly Grid _root = new();
     readonly Path _veil = new() { Fill = new SolidColorBrush(Color.FromArgb(120, 0, 0, 0)), IsHitTestVisible = false };
     readonly Path _outline = new() { Stroke = Brushes.White, StrokeThickness = 1.5, IsHitTestVisible = false, SnapsToDevicePixels = true };
-    readonly Border _sizeTag = new() { CornerRadius = new CornerRadius(6), Background = new SolidColorBrush(Color.FromArgb(220, 20, 20, 20)), Padding = new Thickness(7, 3, 7, 3), IsHitTestVisible = false, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Visibility = Visibility.Collapsed };
+    readonly Border _sizeTag = new() { CornerRadius = Theme.R(6), Background = new SolidColorBrush(Color.FromArgb(220, 20, 20, 20)), Padding = new Thickness(7, 3, 7, 3), IsHitTestVisible = false, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Visibility = Visibility.Collapsed };
     readonly TextBlock _sizeText = new() { Foreground = Brushes.White, FontSize = 11.5 };
     readonly Border _toolbar = new();
     readonly StackPanel _modes = new() { Orientation = Orientation.Horizontal };
@@ -150,7 +150,7 @@ public sealed class CaptureOverlay : Window
         _toolbar.HorizontalAlignment = HorizontalAlignment.Center;
         _toolbar.VerticalAlignment = VerticalAlignment.Top;
         _toolbar.Margin = new Thickness(0, 22, 0, 0);
-        _toolbar.CornerRadius = new CornerRadius(14);
+        _toolbar.CornerRadius = Theme.R(14);
         _toolbar.Padding = new Thickness(6);
         _toolbar.SetResourceReference(Border.BackgroundProperty, "Surface");
         _toolbar.SetResourceReference(Border.BorderBrushProperty, "DockLine");
@@ -368,7 +368,7 @@ public sealed class CaptureOverlay : Window
         if (Motion.Reduced || App.TestMode || px.Width < 4 || px.Height < 4) return;
         var line = new Border
         {
-            BorderThickness = new Thickness(1.5), CornerRadius = new CornerRadius(6), IsHitTestVisible = false,
+            BorderThickness = new Thickness(1.5), CornerRadius = Theme.R(6), IsHitTestVisible = false,
             BorderBrush = new SolidColorBrush(Color.FromArgb(220, 255, 255, 255)), RenderTransformOrigin = new Point(0.5, 0.5),
         };
         var scale = new ScaleTransform(1, 1);
@@ -399,6 +399,7 @@ public sealed class CaptureOverlay : Window
     static void Deliver(BitmapSource shot, Int32Rect where)
     {
         Mark(where);
+        Sound.Play("capture");
         string dir = TestDir ?? System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
         string file = "";
         try
@@ -476,7 +477,7 @@ public sealed class CaptureToast : Window
         ShowInTaskbar = false; Topmost = true; ShowActivated = false; SizeToContent = SizeToContent.WidthAndHeight; Title = "Screenshot";
         FontFamily = (FontFamily)Application.Current.FindResource("UiFont");
 
-        var card = new Border { CornerRadius = new CornerRadius(16), Padding = new Thickness(10), Margin = new Thickness(20), BorderThickness = new Thickness(1), RenderTransform = _shift, Cursor = Cursors.Hand };
+        var card = new Border { CornerRadius = Theme.R(16), Padding = new Thickness(10), Margin = new Thickness(20), BorderThickness = new Thickness(1), RenderTransform = _shift, Cursor = Cursors.Hand };
         card.SetResourceReference(Border.BackgroundProperty, "Surface");
         card.SetResourceReference(Border.BorderBrushProperty, "DockLine");
         card.Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 22, ShadowDepth = 5, Opacity = 0.4, Color = Colors.Black };
@@ -484,7 +485,7 @@ public sealed class CaptureToast : Window
         double scale = Math.Min(260.0 / shot.PixelWidth, 150.0 / shot.PixelHeight);
         var thumb = new Border
         {
-            CornerRadius = new CornerRadius(9), ClipToBounds = true, Width = Math.Max(40, shot.PixelWidth * Math.Min(scale, 1)), Height = Math.Max(30, shot.PixelHeight * Math.Min(scale, 1)),
+            CornerRadius = Theme.R(9), ClipToBounds = true, Width = Math.Max(40, shot.PixelWidth * Math.Min(scale, 1)), Height = Math.Max(30, shot.PixelHeight * Math.Min(scale, 1)),
             Background = new ImageBrush(shot) { Stretch = Stretch.Uniform },
         };
         var title = new TextBlock { Text = copied ? "Copied to clipboard" : "Screenshot saved", FontSize = 13.5, FontWeight = FontWeights.SemiBold, Margin = new Thickness(2, 10, 0, 0) };

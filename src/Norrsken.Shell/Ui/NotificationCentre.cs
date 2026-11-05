@@ -94,7 +94,7 @@ public sealed class NotificationCentre : Window
 
         _sheet.Child = body;
         _sheet.Margin = new Thickness(0, 12, 12, 12);
-        _sheet.CornerRadius = new CornerRadius(24);
+        _sheet.CornerRadius = Theme.R(24);
         _sheet.BorderThickness = new Thickness(1);
         _sheet.SetResourceReference(Border.BackgroundProperty, "Surface");
         _sheet.SetResourceReference(Border.BorderBrushProperty, "DockLine");
@@ -288,12 +288,12 @@ public sealed class NotificationCentre : Window
             n.HorizontalAlignment = HorizontalAlignment.Center;
             stack.Children.Add(n);
         }
-        var pill = new Border { Width = 32, Height = 32, CornerRadius = new CornerRadius(16), Margin = new Thickness(0, withName ? 4 : 1, 0, 1) };
+        var pill = new Border { Width = 32, Height = 32, CornerRadius = Theme.R(16), Margin = new Thickness(0, withName ? 4 : 1, 0, 1) };
         var num = Text(day.Day.ToString(c), 13, bold: today, dim: dimmed);
         num.HorizontalAlignment = HorizontalAlignment.Center;
         num.VerticalAlignment = VerticalAlignment.Center;
         if (dimmed) num.Opacity = 0.45;
-        if (today) { pill.SetResourceReference(Border.BackgroundProperty, "Text"); num.SetResourceReference(TextBlock.ForegroundProperty, "SurfaceSolid"); }
+        if (today) { pill.SetResourceReference(Border.BackgroundProperty, "Accent"); num.SetResourceReference(TextBlock.ForegroundProperty, "AccentText"); }
         pill.Child = num;
         stack.Children.Add(pill);
         return stack;
@@ -402,7 +402,7 @@ public sealed class NotificationCentre : Window
         var rail = new Grid();
         var line = new Border { Width = 1, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 30, 0, 0), Visibility = last ? Visibility.Collapsed : Visibility.Visible };
         line.SetResourceReference(Border.BackgroundProperty, "Border");
-        var node = new Border { Width = 26, Height = 26, CornerRadius = new CornerRadius(13), VerticalAlignment = VerticalAlignment.Top, HorizontalAlignment = HorizontalAlignment.Center, BorderThickness = new Thickness(1), Margin = new Thickness(0, 2, 0, 0) };
+        var node = new Border { Width = 26, Height = 26, CornerRadius = Theme.R(13), VerticalAlignment = VerticalAlignment.Top, HorizontalAlignment = HorizontalAlignment.Center, BorderThickness = new Thickness(1), Margin = new Thickness(0, 2, 0, 0) };
         node.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
         node.SetResourceReference(Border.BorderBrushProperty, "Border");
         if (items[0].AppIcon is { } icon) node.Child = new Image { Source = icon, Width = 15, Height = 15 };
@@ -450,7 +450,7 @@ public sealed class NotificationCentre : Window
         if (showTime) { var w = Text(When(n.Time), 11, dim: true); w.Margin = new Thickness(0, 0, 0, 2); stack.Children.Add(w); }
         if (n.Title.Length > 0) stack.Children.Add(Text(n.Title, 13.5, bold: true, wrap: true));
         if (n.Body.Length > 0) { var b = Text(n.Body, 12.5, dim: true, wrap: true); b.MaxHeight = 72; b.Margin = new Thickness(0, 1, 0, 0); stack.Children.Add(b); }
-        var card = new Border { CornerRadius = new CornerRadius(12), Padding = new Thickness(10, 8, 10, 9), Margin = new Thickness(-10, 0, 0, 2), Child = stack, Cursor = Cursors.Hand, Background = Brushes.Transparent, ToolTip = "Open " + n.AppName + " · right-click to dismiss" };
+        var card = new Border { CornerRadius = Theme.R(12), Padding = new Thickness(10, 8, 10, 9), Margin = new Thickness(-10, 0, 0, 2), Child = stack, Cursor = Cursors.Hand, Background = Brushes.Transparent, ToolTip = "Open " + n.AppName + " · right-click to dismiss" };
         card.MouseEnter += (_, _) => card.SetResourceReference(Border.BackgroundProperty, "Hover");
         card.MouseLeave += (_, _) => card.Background = Brushes.Transparent;
         card.MouseLeftButtonUp += (_, _) => Notifications.Open(n);
@@ -477,7 +477,7 @@ internal sealed class FocusDone : Window
         WindowStyle = WindowStyle.None; AllowsTransparency = true; Background = Brushes.Transparent; ResizeMode = ResizeMode.NoResize;
         ShowInTaskbar = false; Topmost = true; ShowActivated = false; SizeToContent = SizeToContent.WidthAndHeight;
         FontFamily = (FontFamily)Application.Current.FindResource("UiFont");
-        var card = new Border { CornerRadius = new CornerRadius(16), Padding = new Thickness(18, 14, 18, 14), Margin = new Thickness(20), BorderThickness = new Thickness(1) };
+        var card = new Border { CornerRadius = Theme.R(16), Padding = new Thickness(18, 14, 18, 14), Margin = new Thickness(20), BorderThickness = new Thickness(1) };
         card.SetResourceReference(Border.BackgroundProperty, "Surface");
         card.SetResourceReference(Border.BorderBrushProperty, "DockLine");
         var s = new StackPanel();
@@ -490,7 +490,7 @@ internal sealed class FocusDone : Window
         Content = card;
         var shift = new TranslateTransform(); card.RenderTransform = shift;
         // A thin bar drains along the bottom while the card waits to leave
-        var drain = new Border { Height = 2, CornerRadius = new CornerRadius(1), Margin = new Thickness(0, 10, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, Opacity = 0.5 };
+        var drain = new Border { Height = 2, CornerRadius = Theme.R(1), Margin = new Thickness(0, 10, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, Opacity = 0.5 };
         drain.SetResourceReference(Border.BackgroundProperty, "TextDim");
         s.Children.Add(drain);
         bool leaving = false;

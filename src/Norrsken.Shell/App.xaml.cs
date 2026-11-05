@@ -31,6 +31,7 @@ public partial class App : Application
         base.OnStartup(e);
         FrameRate.Apply(); // before any animation exists: everything moves at the display's refresh rate
         Ui.Switches.Register();
+        Sound.RegisterSwitchSounds();
 
         int st = Array.IndexOf(e.Args, "--selftest");
         if (st >= 0)

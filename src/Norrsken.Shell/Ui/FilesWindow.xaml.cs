@@ -227,9 +227,9 @@ public partial class FilesWindow : Window
         {
             var stack = new StackPanel();
             stack.Children.Add(text);
-            var track = new Border { Height = 3, CornerRadius = new CornerRadius(1.5), Margin = new Thickness(0, 5, 0, 1) };
+            var track = new Border { Height = 3, CornerRadius = Theme.R(1.5), Margin = new Thickness(0, 5, 0, 1) };
             track.SetResourceReference(Border.BackgroundProperty, "Border");
-            var fill = new Border { Height = 3, CornerRadius = new CornerRadius(1.5), HorizontalAlignment = HorizontalAlignment.Left };
+            var fill = new Border { Height = 3, CornerRadius = Theme.R(1.5), HorizontalAlignment = HorizontalAlignment.Left };
             fill.SetResourceReference(Border.BackgroundProperty, u.Used > 0.9 ? "Text" : "TextDim");
             var bar = new Grid();
             bar.Children.Add(track);
@@ -964,7 +964,7 @@ public partial class FilesWindow : Window
             return;
         }
         var f = sel[0];
-        var visual = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, Margin = new Thickness(0, 4, 0, 14), HorizontalAlignment = HorizontalAlignment.Left };
+        var visual = new Border { CornerRadius = Theme.R(12), ClipToBounds = true, Margin = new Thickness(0, 4, 0, 14), HorizontalAlignment = HorizontalAlignment.Left };
         visual.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
         string ext = Path.GetExtension(f.FullPath);
         if (!f.IsDir && ImageExt.Contains(ext) && f.ShellItem == null) visual.Child = new Image { Source = Decode(f.FullPath, 520), MaxHeight = 220, MaxWidth = 260, Stretch = Stretch.Uniform };

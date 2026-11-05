@@ -43,6 +43,7 @@ public static class CaptureAgent
             catch (Exception ex) { Log.Write("Capture failed: " + ex.Message); }
         };
         KeyboardHook.Start();
+        NorrskenApps.FollowThemeChanges(); // sounds switched on in Settings reach the capture tool too
         var quit = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Norrsken.Capture.Quit");
         new Thread(() => { quit.WaitOne(); app.Dispatcher.BeginInvoke(() => { KeyboardHook.Stop(); app.Shutdown(); }); }) { IsBackground = true }.Start();
         Log.Write("Norrsken Capture running: PrtScn, Win+Shift+S, Win+PrtScn, Alt+PrtScn");

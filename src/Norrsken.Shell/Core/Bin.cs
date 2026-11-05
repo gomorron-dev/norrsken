@@ -99,6 +99,7 @@ public static class Bin
         string target = Free(Path.Combine(dir, item.Name));
         MoveAny(item.DataPath, target);
         TryDelete(item.InfoPath);
+        Sound.Play("restore");
         Notify(dir);
         Notify(Path.GetDirectoryName(item.InfoPath)!);
         return target;
@@ -162,6 +163,7 @@ public static class Bin
         else TryDelete(item.DataPath);
         TryDelete(item.InfoPath);
         AddFreed(item.Size);
+        Sound.Play("empty");
         Notify(Path.GetDirectoryName(item.InfoPath)!);
     }
 
@@ -200,6 +202,7 @@ public static class Bin
         }
         long bytes = all.Sum(i => i.Size);
         SHEmptyRecycleBinW(IntPtr.Zero, null, 0x7); // no confirmation, progress or sound: Norrsken already asked
+        Sound.Play("empty");
         AddFreed(bytes);
         Raise();
     }

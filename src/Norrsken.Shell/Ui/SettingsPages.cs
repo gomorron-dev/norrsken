@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Shapes;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using Norrsken.Shell.Core;
 using Windows.Devices.Radios;
@@ -26,6 +28,7 @@ public partial class SettingsWindow
     public static IEnumerable<(string Id, string Title, string Keywords)> PageIndex =>
     [
         ("personal", "Personalisation", "theme wallpaper dock colour dark light cursor pointer title bar motion keyboard shortcuts background"),
+        ("customise", "Customise", "accent colour color corners shape round square dock size magnification glass transparency animation speed motion springy smooth snappy sound sounds sfx effects"),
         ("display", "Display", "brightness night light scale resolution monitor hdr refresh screen"),
         ("sound", "Sound", "volume mute speakers headphones microphone output input audio"),
         ("network", "Network & internet", "wifi wi-fi ethernet vpn airplane proxy hotspot internet"),
@@ -46,6 +49,7 @@ public partial class SettingsWindow
         _pageList =
         [
             new("personal", "Personalisation", "M12,3.5 A8.5,8.5 0 1 1 11.99,3.5 Z M12,3.5 V20.5 M12,7 H16 M12,11 H19.5 M12,15 H19 M12,19 H15", "theme wallpaper dock colour dark light cursor pointer title bar motion keyboard shortcuts", () => NorrskenPage),
+            new("customise", "Customise", "M4,7 H11 M15,7 H20 M13,4.5 V9.5 M4,17 H7 M11,17 H20 M9,14.5 V19.5", "accent colour corners shape dock size magnification glass animation speed motion style sound effects sfx", CustomisePage),
             new("display", "Display", "M3.5,5 H20.5 V16 H3.5 Z M9,20 H15 M12,16 V20", "brightness night light scale resolution monitor hdr refresh", DisplayPage),
             new("sound", "Sound", "M4,9.5 H7.5 L12,5.5 V18.5 L7.5,14.5 H4 Z M15.5,9 A4,4 0 0 1 15.5,15 M18,6.5 A7.5,7.5 0 0 1 18,17.5", "volume mute speakers headphones microphone output input", SoundPage),
             new("network", "Network & internet", "M3,9.5 A13,13 0 0 1 21,9.5 M6,12.8 A8.5,8.5 0 0 1 18,12.8 M9,16 A4.2,4.2 0 0 1 15,16 M12,19.2 H12.1", "wifi wi-fi ethernet vpn airplane proxy hotspot", NetworkPage),
@@ -203,8 +207,176 @@ public partial class SettingsWindow
         catch (Exception ex) { return "error: " + ex.Message; }
     }
 
-    // ───────────────────────── pages (everything here works in place; nothing opens Windows Settings) ─────────────────────────
+    // ───────────────────────── Customise: accent, shape, dock, motion, sound ─────────────────────────
 
+    /// <summary>Saves, re-applies the look here and in the dock, and tells open Norrsken apps to follow.</summary>
+    void LookChanged()
+    {
+        App.Settings.Save();
+        Theme.Apply(App.Settings.Theme);
+        _dock?.ApplySettings();
+        NorrskenApps.BroadcastTheme();
+    }
+
+    readonly DispatcherTimer _lookDebounce = new() { Interval = TimeSpan.FromMilliseconds(140) };
+
+    /// <summary>Sliders re-apply the look a moment after they stop moving, not on every pixel.</summary>
+    void LookChangedSoon()
+    {
+        _lookDebounce.Stop();
+        _lookDebounce.Tick -= LookTick;
+        _lookDebounce.Tick += LookTick;
+        _lookDebounce.Start();
+    }
+
+    void LookTick(object? sender, EventArgs e) { _lookDebounce.Stop(); LookChanged(); }
+
+    /// <summary>A row of mutually exclusive choices, like a segmented control.</summary>
+    FrameworkElement Choices(string[] labels, int selected, Action<int> changed)
+    {
+        var row = new WrapPanel { VerticalAlignment = VerticalAlignment.Center };
+        string group = "g" + Guid.NewGuid().ToString("N");
+        for (int i = 0; i < labels.Length; i++)
+        {
+            int index = i;
+            var rb = new RadioButton { GroupName = group, IsChecked = i == selected, Style = (Style)FindResource("AppChip"), Margin = new Thickness(0, 0, 8, 0), Padding = new Thickness(14, 6, 14, 6), Content = new TextBlock { Text = labels[i], FontSize = 12.5 } };
+            rb.Checked += (_, _) => { if (rb.IsLoaded) changed(index); };
+            row.Children.Add(rb);
+        }
+        return row;
+    }
+
+    FrameworkElement Range(double value, double min, double max, Action<double> changed, string left, string right)
+    {
+        var panel = new DockPanel { Width = 300, VerticalAlignment = VerticalAlignment.Center };
+        var l = new TextBlock { Text = left, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) };
+        var r = new TextBlock { Text = right, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
+        l.SetResourceReference(TextBlock.ForegroundProperty, "TextDim");
+        r.SetResourceReference(TextBlock.ForegroundProperty, "TextDim");
+        DockPanel.SetDock(l, Dock.Left);
+        DockPanel.SetDock(r, Dock.Right);
+        panel.Children.Add(l);
+        panel.Children.Add(r);
+        var s = SliderFor((value - min) / (max - min) * 100, v => changed(min + (max - min) * v / 100));
+        s.Width = double.NaN;
+        panel.Children.Add(s);
+        return panel;
+    }
+
+    FrameworkElement CustomisePage()
+    {
+        var s = Section("Customise");
+        var set = App.Settings;
+
+        // ── Accent ──
+        s.Children.Add(Heading("Accent colour"));
+        s.Children.Add(Note("Switches, selections, buttons, badges and the dock's running dots. Norrsken is monochrome until you pick one."));
+        var swatches = new WrapPanel { Margin = new Thickness(4, 10, 0, 6) };
+        var custom = new TextBox { Width = 110, Text = set.Accent.StartsWith('#') ? set.Accent : "", ToolTip = "Any colour as #RRGGBB" };
+        void Paint()
+        {
+            foreach (FrameworkElement el in swatches.Children)
+                if (el is Button { Tag: string id, Content: Grid g } && g.Children[^1] is Ellipse ring)
+                    ring.Opacity = id == set.Accent || (id == "custom" && set.Accent.StartsWith('#')) ? 1 : 0;
+        }
+        foreach (var (id, name, hex) in Theme.Accents)
+        {
+            var g = new Grid { Width = 34, Height = 34 };
+            var fill = new Ellipse { Width = 26, Height = 26 };
+            if (hex.Length > 0) fill.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+            else { fill.SetResourceReference(Shape.FillProperty, "Text"); fill.StrokeThickness = 1; fill.SetResourceReference(Shape.StrokeProperty, "Border"); }
+            var ring = new Ellipse { Width = 34, Height = 34, StrokeThickness = 2, Opacity = 0 };
+            ring.SetResourceReference(Shape.StrokeProperty, "Text");
+            g.Children.Add(fill);
+            g.Children.Add(ring);
+            var b = new Button { Style = (Style)FindResource("IconButton"), Content = g, Tag = id, ToolTip = name, Margin = new Thickness(0, 0, 6, 6), Width = 40, Height = 40 };
+            b.Click += (_, _) => { set.Accent = id; Paint(); LookChanged(); Motion.Pop(g, 0.8); };
+            swatches.Children.Add(b);
+        }
+        Paint();
+        custom.LostFocus += (_, _) =>
+        {
+            string v = custom.Text.Trim();
+            if (v.Length == 0) return;
+            if (!v.StartsWith('#')) v = "#" + v;
+            try { ColorConverter.ConvertFromString(v); set.Accent = v; Paint(); LookChanged(); }
+            catch (FormatException) { custom.Text = ""; }
+        };
+        s.Children.Add(swatches);
+        s.Children.Add(Group(Row("Your own colour", "Type a hex colour, like #7AA2F7, and press Tab.", custom)));
+
+        // ── Shape ──
+        s.Children.Add(Heading("Shape"));
+        double[] corners = [0, 0.5, 1, 1.5];
+        int ci = Array.FindIndex(corners, c => Math.Abs(c - set.CornerScale) < 0.01);
+        s.Children.Add(Group(Row("Corners", "Windows, cards, buttons and the dock.", Choices(["Square", "Subtle", "Norrsken", "Round"], ci < 0 ? 2 : ci, i => { set.CornerScale = corners[i]; LookChanged(); }))));
+
+        // ── Dock ──
+        s.Children.Add(Heading("Dock"));
+        s.Children.Add(Group(
+            Row("Size", null, Range(set.DockScale, 0.75, 1.4, v => { set.DockScale = Math.Round(v, 2); LookChangedSoon(); }, "Small", "Large")),
+            Row("Magnification", "How much icons grow under the pointer.", Range(set.MagnifyAmount, 0.1, 1.0, v => { set.MagnifyAmount = Math.Round(v, 2); LookChangedSoon(); }, "Subtle", "Big")),
+            Row("Glass", "How see-through the dock is.", Range(set.DockOpacity, 0.4, 1.0, v => { set.DockOpacity = Math.Round(v, 2); LookChangedSoon(); }, "Clear", "Solid"))));
+
+        // ── Motion ──
+        s.Children.Add(Heading("Motion"));
+        string[] styles = ["natural", "springy", "smooth", "snappy"];
+        var demo = new Border { Width = 34, Height = 34, CornerRadius = Theme.R(10), Margin = new Thickness(0, 0, 4, 0) };
+        demo.SetResourceReference(Border.BackgroundProperty, "Accent");
+        var demoShift = new TranslateTransform();
+        demo.RenderTransform = demoShift;
+        void Play()
+        {
+            Motion.From(demoShift, TranslateTransform.XProperty, -60, 0, 520, Motion.Spring);
+            Motion.Pop(demo, 0.6);
+        }
+        var tryIt = new Button { Style = (Style)FindResource("LinkButton"), Content = new TextBlock { Text = "Try it  ›", FontSize = 12.5 }, Margin = new Thickness(12, 0, 0, 0) };
+        tryIt.Click += (_, _) => Play();
+        var demoRow = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        demoRow.Children.Add(demo);
+        demoRow.Children.Add(tryIt);
+        s.Children.Add(Group(
+            Row("Style", "How things move and land.", Choices(["Natural", "Springy", "Smooth", "Snappy"], Math.Max(0, Array.IndexOf(styles, set.MotionStyle)), i => { set.MotionStyle = styles[i]; LookChanged(); Play(); })),
+            Row("Speed", null, Range(set.AnimationScale, 0.5, 1.6, v => { set.AnimationScale = Math.Round(v, 2); LookChangedSoon(); }, "Faster", "Slower")),
+            Row("Preview", null, demoRow)));
+
+        // ── Sound ──
+        s.Children.Add(Heading("Sounds"));
+        bool pack = Sound.HasPack;
+        s.Children.Add(Note(pack ? "Quiet sounds for things Norrsken does. Off until you turn them on." : "No sound pack was found. Choose a folder with files named after the events below (launcher.wav, trash.wav, …)."));
+        var events = new StackPanel { IsEnabled = set.Sounds };
+        var master = Toggle("Interface sounds", set.Sounds, on => { set.Sounds = on; events.IsEnabled = on; LookChanged(); if (on) Sound.Preview("toggle"); });
+        var volume = Range(set.SoundVolume, 0, 1, v => { set.SoundVolume = Math.Round(v, 2); LookChangedSoon(); }, "Quiet", "Loud");
+        s.Children.Add(Group(master, Row("Volume", null, volume)));
+        var rows = new List<UIElement>();
+        foreach (var (id, label) in Sound.Events)
+        {
+            string ev = id;
+            var line = new DockPanel();
+            var play = new Button { Style = (Style)FindResource("IconButton"), Width = 30, Height = 30, ToolTip = "Play", Margin = new Thickness(10, 0, 0, 0), IsEnabled = Sound.FileFor(id) != null, Content = new GlyphIcon { Glyph = "play", Width = 13, Height = 13 } };
+            play.Click += (_, _) => Sound.Preview(ev);
+            DockPanel.SetDock(play, Dock.Right);
+            line.Children.Add(play);
+            line.Children.Add(Toggle(label + (Sound.QuietByDefault.Contains(id) ? "  (off by default: it plays often)" : ""), Sound.IsOn(id), on =>
+            {
+                if (on) set.MutedSounds.Remove(ev); else if (!set.MutedSounds.Contains(ev)) set.MutedSounds.Add(ev);
+                LookChanged();
+            }));
+            rows.Add(line);
+        }
+        events.Children.Add(Group(rows.ToArray()));
+        s.Children.Add(events);
+        var folder = Status(set.SoundPack.Length > 0 ? "Sound pack: " + set.SoundPack : "Sound pack: Norrsken's own");
+        s.Children.Add(Group(Row("Sound pack", "A folder of .wav files named after the events. Missing ones stay silent.", Action("Choose", () =>
+        {
+            var dlg = new Microsoft.Win32.OpenFolderDialog { Title = "Choose a sound pack folder" };
+            if (dlg.ShowDialog() == true) { set.SoundPack = dlg.FolderName; folder.Text = "Sound pack: " + dlg.FolderName; LookChanged(); }
+        })), Row("Norrsken's own pack", null, Action("Use", () => { set.SoundPack = ""; folder.Text = "Sound pack: Norrsken's own"; LookChanged(); }))));
+        s.Children.Add(folder);
+        return s;
+    }
+
+    // ───────────────────────── pages (everything here works in place; nothing opens Windows Settings) ─────────────────────────
     ComboBox Combo(IEnumerable<string> items, string? selected, Action<int> changed, double width = 240)
     {
         var c = new ComboBox { Width = width, VerticalAlignment = VerticalAlignment.Center };
@@ -493,7 +665,7 @@ public partial class SettingsWindow
         s.Children.Add(Group(Row("Install apps", "Steam, Epic, Discord, Claude, browsers and more", Action("Install apps…", () => InstallApps_Click(this, new RoutedEventArgs()), primary: true))));
         s.Children.Add(Heading("Installed apps"));
         var search = new TextBox { Style = (Style)FindResource("PlainTextBox"), FontSize = 13 };
-        var box = new Border { CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Height = 34, Padding = new Thickness(10, 0, 10, 0), Margin = new Thickness(0, 0, 0, 8), Child = search };
+        var box = new Border { CornerRadius = Theme.R(10), BorderThickness = new Thickness(1), Height = 34, Padding = new Thickness(10, 0, 10, 0), Margin = new Thickness(0, 0, 0, 8), Child = search };
         box.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
         box.SetResourceReference(Border.BorderBrushProperty, "Border");
         s.Children.Add(box);
@@ -606,9 +778,9 @@ public partial class SettingsWindow
                 if (!d.IsReady || d.TotalSize == 0) continue;
                 double used = 1 - (double)d.AvailableFreeSpace / d.TotalSize;
                 var bar = new Grid { Width = 220, Height = 6, VerticalAlignment = VerticalAlignment.Center };
-                var track = new Border { CornerRadius = new CornerRadius(3) };
+                var track = new Border { CornerRadius = Theme.R(3) };
                 track.SetResourceReference(Border.BackgroundProperty, "Border");
-                var fill = new Border { CornerRadius = new CornerRadius(3), HorizontalAlignment = HorizontalAlignment.Left, Width = 220 * used };
+                var fill = new Border { CornerRadius = Theme.R(3), HorizontalAlignment = HorizontalAlignment.Left, Width = 220 * used };
                 fill.SetResourceReference(Border.BackgroundProperty, used > 0.9 ? "Text" : "TextDim");
                 bar.Children.Add(track); bar.Children.Add(fill);
                 string name = (d.VolumeLabel.Length > 0 ? d.VolumeLabel : "Local disk") + $" ({d.Name.TrimEnd('\\')})";

@@ -19,7 +19,7 @@
           </Grid.RenderTransform>
           <ContentControl Content="{Binding}" ContentTemplate="{StaticResource AppIcon}" Focusable="False"/>
         </Grid>
-        <Border Width="{Binding IsActive, Converter={StaticResource DotWidth}}" Height="4" CornerRadius="2"
+        <Border Width="{Binding IsActive, Converter={StaticResource DotWidth}}" Height="4" CornerRadius="{DynamicResource R2}"
                 Opacity="{Binding DotOpacity}" Background="{DynamicResource Dot}"
                 VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,3"/>
         <!-- A soft light pools under an icon as it magnifies (opacity driven by the dock's frame loop). -->
@@ -37,7 +37,7 @@
 
   <Grid x:Name="Root">
     <Canvas x:Name="Overlay" IsHitTestVisible="False" Panel.ZIndex="5">
-      <Border x:Name="HoverLabel" Opacity="0" CornerRadius="8" Padding="10,4,10,5"
+      <Border x:Name="HoverLabel" Opacity="0" CornerRadius="{DynamicResource R8}" Padding="10,4,10,5"
               Background="{DynamicResource SurfaceSolid}" BorderBrush="{DynamicResource DockLine}" BorderThickness="1">
         <TextBlock x:Name="HoverText" FontSize="12" Foreground="{DynamicResource Text}"/>
       </Border>
@@ -47,14 +47,14 @@
     <Border x:Name="RevealZone" Height="12" VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="600"
             Background="#01808080" Visibility="Collapsed" MouseEnter="RevealZone_MouseEnter" ToolTip="Show the dock">
       <!-- A quiet handle: the dock is down here. -->
-      <Border Width="132" Height="5" CornerRadius="2.5" VerticalAlignment="Bottom" Margin="0,0,0,4" Background="{DynamicResource Text}" Opacity="0.28" IsHitTestVisible="False"/>
+      <Border Width="132" Height="5" CornerRadius="{DynamicResource R2_5}" VerticalAlignment="Bottom" Margin="0,0,0,4" Background="{DynamicResource Text}" Opacity="0.28" IsHitTestVisible="False"/>
     </Border>
 
     <Grid x:Name="DockHost" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10"
           MouseMove="Dock_MouseMove" MouseLeave="Dock_MouseLeave">
       <Grid.RenderTransform><TranslateTransform x:Name="DockShift"/></Grid.RenderTransform>
 
-      <Border x:Name="Pill" CornerRadius="21" Background="{DynamicResource DockBg}"
+      <Border x:Name="Pill" CornerRadius="{DynamicResource R21}" Background="{DynamicResource DockBg}"
               BorderBrush="{DynamicResource DockLine}" BorderThickness="1">
         <Border.Effect>
           <DropShadowEffect BlurRadius="30" ShadowDepth="8" Direction="270"
@@ -62,7 +62,7 @@
         </Border.Effect>
       </Border>
       <!-- Glass rim: a faint highlight along the top edge and a soft sheen that fades downward. -->
-      <Border x:Name="Rim" CornerRadius="21" BorderThickness="1" IsHitTestVisible="False">
+      <Border x:Name="Rim" CornerRadius="{DynamicResource R21}" BorderThickness="1" IsHitTestVisible="False">
         <Border.BorderBrush>
           <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
             <GradientStop Color="#38FFFFFF" Offset="0"/>
@@ -85,7 +85,7 @@
             <Grid.RenderTransform>
               <TransformGroup><ScaleTransform/><ScaleTransform/><TranslateTransform/></TransformGroup>
             </Grid.RenderTransform>
-            <Border CornerRadius="11" Background="{DynamicResource Text}">
+            <Border CornerRadius="{DynamicResource R11}" Background="{DynamicResource Text}">
               <Viewbox Margin="9">
                 <!-- Norrsken mark: an aurora ribbon over a horizon -->
                 <Canvas Width="24" Height="24">
@@ -111,16 +111,16 @@
         <Border x:Name="Div3" Width="1" Height="30" Margin="7,0" VerticalAlignment="Center" Background="{DynamicResource DockLine}" Visibility="Collapsed"><Border.OpacityMask><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#00000000" Offset="0"/><GradientStop Color="#FF000000" Offset="0.3"/><GradientStop Color="#FF000000" Offset="0.7"/><GradientStop Color="#00000000" Offset="1"/></LinearGradientBrush></Border.OpacityMask></Border>
         <Grid x:Name="MediaCell" Height="56" Visibility="Collapsed" Background="Transparent" AutomationProperties.Name="Now playing">
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="2,0,0,0">
-            <Border x:Name="MediaArt" Width="38" Height="38" CornerRadius="10" Background="{DynamicResource Pressed}" Cursor="Hand" ClipToBounds="True"
+            <Border x:Name="MediaArt" Width="38" Height="38" CornerRadius="{DynamicResource R10}" Background="{DynamicResource Pressed}" Cursor="Hand" ClipToBounds="True"
                     MouseLeftButtonUp="MediaInfo_Click" ToolTip="Open the app that's playing">
               <Grid>
                 <ui:GlyphIcon x:Name="MediaArtGlyph" Glyph="music" Width="16" Height="16" Foreground="{DynamicResource TextDim}"/>
                 <!-- A tiny equaliser dances in the corner while something plays. -->
-                <Border x:Name="MediaEq" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,3,3" CornerRadius="4" Padding="3,2" Background="#99000000">
+                <Border x:Name="MediaEq" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,3,3" CornerRadius="{DynamicResource R4}" Padding="3,2" Background="#99000000">
                   <StackPanel Orientation="Horizontal" Height="9" VerticalAlignment="Bottom">
-                    <Border x:Name="Eq1" Width="2" Height="4" Margin="0,0,1.5,0" CornerRadius="1" Background="White" VerticalAlignment="Bottom"/>
-                    <Border x:Name="Eq2" Width="2" Height="8" Margin="0,0,1.5,0" CornerRadius="1" Background="White" VerticalAlignment="Bottom"/>
-                    <Border x:Name="Eq3" Width="2" Height="6" CornerRadius="1" Background="White" VerticalAlignment="Bottom"/>
+                    <Border x:Name="Eq1" Width="2" Height="4" Margin="0,0,1.5,0" CornerRadius="{DynamicResource R1}" Background="White" VerticalAlignment="Bottom"/>
+                    <Border x:Name="Eq2" Width="2" Height="8" Margin="0,0,1.5,0" CornerRadius="{DynamicResource R1}" Background="White" VerticalAlignment="Bottom"/>
+                    <Border x:Name="Eq3" Width="2" Height="6" CornerRadius="{DynamicResource R1}" Background="White" VerticalAlignment="Bottom"/>
                   </StackPanel>
                 </Border>
               </Grid>
@@ -151,14 +151,14 @@
             <Grid.RenderTransform>
               <TransformGroup><ScaleTransform/><ScaleTransform/><TranslateTransform/></TransformGroup>
             </Grid.RenderTransform>
-            <Border x:Name="BinTile" CornerRadius="11" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource DockLine}" BorderThickness="1"
+            <Border x:Name="BinTile" CornerRadius="{DynamicResource R11}" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource DockLine}" BorderThickness="1"
                     RenderTransformOrigin="0.5,0.5">
               <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
               <ui:GlyphIcon x:Name="BinGlyph" Glyph="trash" Width="22" Height="22" Foreground="{DynamicResource Text}"/>
             </Border>
-            <Border x:Name="BinBadge" CornerRadius="8" MinWidth="16" Height="16" Padding="4,0" HorizontalAlignment="Right" VerticalAlignment="Top"
-                    Margin="0,-4,-4,0" Background="{DynamicResource Text}" Visibility="Collapsed" IsHitTestVisible="False">
-              <TextBlock x:Name="BinCount" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SurfaceSolid}"
+            <Border x:Name="BinBadge" CornerRadius="{DynamicResource R8}" MinWidth="16" Height="16" Padding="4,0" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,-4,-4,0" Background="{DynamicResource Accent}" Visibility="Collapsed" IsHitTestVisible="False">
+              <TextBlock x:Name="BinCount" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentText}"
                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
           </Grid>
@@ -167,7 +167,7 @@
 
         <Grid x:Name="ClockCell" MinWidth="58" Height="56" Background="Transparent" Cursor="Hand"
               AutomationProperties.Name="Quick settings" MouseUp="Clock_MouseUp">
-          <Border CornerRadius="12" Margin="0,7">
+          <Border CornerRadius="{DynamicResource R12}" Margin="0,7">
             <Border.Style>
               <Style TargetType="Border">
                 <Setter Property="Background" Value="Transparent"/>
@@ -179,7 +179,7 @@
               </Style>
             </Border.Style>
           </Border>
-          <Ellipse x:Name="NotifyDot" Width="6" Height="6" Fill="{DynamicResource Text}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,12,6,0" Visibility="Collapsed" IsHitTestVisible="False"/>
+          <Ellipse x:Name="NotifyDot" Width="6" Height="6" Fill="{DynamicResource Accent}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,12,6,0" Visibility="Collapsed" IsHitTestVisible="False"/>
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,10,0">
             <ui:GlyphIcon x:Name="NetGlyph" Glyph="ethernet" Width="15" Height="15" Foreground="{DynamicResource TextDim}"
                           VerticalAlignment="Center"/>

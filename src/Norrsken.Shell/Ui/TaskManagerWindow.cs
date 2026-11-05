@@ -76,7 +76,7 @@ public sealed class TaskManagerWindow : Window
         bar.Children.Add(pebbles);
         var tools = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
         System.Windows.Shell.WindowChrome.SetIsHitTestVisibleInChrome(tools, true);
-        var searchBox = new Border { CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Width = 220, Height = 32, Padding = new Thickness(10, 0, 10, 0) };
+        var searchBox = new Border { CornerRadius = Theme.R(10), BorderThickness = new Thickness(1), Width = 220, Height = 32, Padding = new Thickness(10, 0, 10, 0) };
         searchBox.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
         searchBox.SetResourceReference(Border.BorderBrushProperty, "Border");
         _search.Style = (Style)FindResource("PlainTextBox");
@@ -294,7 +294,7 @@ public sealed class TaskManagerWindow : Window
         var mem = Txt(Files.FormatSize(g.Memory), 12.5, dim: true);
         mem.HorizontalAlignment = HorizontalAlignment.Right;
         var row = Columns(name, cpu, mem);
-        var b = new Border { CornerRadius = new CornerRadius(9), Padding = new Thickness(10, 6, 12, 6), Child = row, Background = Brushes.Transparent, Cursor = Cursors.Hand };
+        var b = new Border { CornerRadius = Theme.R(9), Padding = new Thickness(10, 6, 12, 6), Child = row, Background = Brushes.Transparent, Cursor = Cursors.Hand };
         // Heavy users get a quiet tint, the way you'd scan for the culprit.
         if (g.Cpu > 25) b.SetResourceReference(Border.BackgroundProperty, "Pressed");
         if (g.Key == _selected) b.SetResourceReference(Border.BackgroundProperty, "Selection");
@@ -356,7 +356,7 @@ public sealed class TaskManagerWindow : Window
             s.Children.Add(head);
             spark.Margin = new Thickness(0, 6, 0, 0);
             s.Children.Add(spark);
-            var card = new Border { CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10, 12, 10), Margin = new Thickness(0, 0, 0, 6), Child = s, Cursor = Cursors.Hand, BorderThickness = new Thickness(1) };
+            var card = new Border { CornerRadius = Theme.R(12), Padding = new Thickness(12, 10, 12, 10), Margin = new Thickness(0, 0, 0, 6), Child = s, Cursor = Cursors.Hand, BorderThickness = new Thickness(1) };
             card.SetResourceReference(Border.BackgroundProperty, k == _perf ? "Selection" : "SurfaceAlt");
             card.SetResourceReference(Border.BorderBrushProperty, "Border");
             string key = k;
@@ -372,7 +372,7 @@ public sealed class TaskManagerWindow : Window
         detail.Children.Add(Txt(Value(_perf), 14, dim: true));
         var big = Graph(_history[_perf], 600, 260, 2);
         big.Margin = new Thickness(0, 18, 0, 8);
-        var frame = new Border { CornerRadius = new CornerRadius(14), BorderThickness = new Thickness(1), Child = big, Padding = new Thickness(10), Margin = new Thickness(0, 16, 0, 0) };
+        var frame = new Border { CornerRadius = Theme.R(14), BorderThickness = new Thickness(1), Child = big, Padding = new Thickness(10), Margin = new Thickness(0, 16, 0, 0) };
         frame.SetResourceReference(Border.BorderBrushProperty, "Border");
         frame.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
         detail.Children.Add(frame);
@@ -474,7 +474,7 @@ public sealed class TaskManagerWindow : Window
             text.Children.Add(Txt(e.Name, 13.5));
             text.Children.Add(Txt($"{e.Source}  ·  {e.Command}", 11.5, dim: true));
             row.Children.Add(text);
-            var card = new Border { CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10, 14, 10), Margin = new Thickness(0, 0, 0, 4), Child = row, BorderThickness = new Thickness(1) };
+            var card = new Border { CornerRadius = Theme.R(12), Padding = new Thickness(14, 10, 14, 10), Margin = new Thickness(0, 0, 0, 4), Child = row, BorderThickness = new Thickness(1) };
             card.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
             card.SetResourceReference(Border.BorderBrushProperty, "Border");
             stack.Children.Add(card);

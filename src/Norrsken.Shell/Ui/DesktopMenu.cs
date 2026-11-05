@@ -155,7 +155,7 @@ public sealed class NamePrompt : CardWindow
         Title = title;
         var s = new StackPanel { Margin = new Thickness(22, 20, 22, 18) };
         s.Children.Add(Text(title, 16, bold: true));
-        var field = new Border { CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Height = 38, Padding = new Thickness(10, 0, 10, 0), Margin = new Thickness(0, 14, 0, 0) };
+        var field = new Border { CornerRadius = Theme.R(10), BorderThickness = new Thickness(1), Height = 38, Padding = new Thickness(10, 0, 10, 0), Margin = new Thickness(0, 14, 0, 0) };
         field.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
         field.SetResourceReference(Border.BorderBrushProperty, "Border");
         _box.Style = (Style)FindResource("PlainTextBox");

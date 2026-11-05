@@ -113,7 +113,7 @@ public sealed class AltTab : Window
         _cards.MaxWidth = Math.Min(work.Width - 120, 6 * (ThumbW + 28));
         foreach (var w in _order)
         {
-            var thumb = new Border { Width = ThumbW, Height = ThumbH, CornerRadius = new CornerRadius(10) };
+            var thumb = new Border { Width = ThumbW, Height = ThumbH, CornerRadius = Theme.R(10) };
             thumb.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
             if (w.IsMinimized && w.Icon != null) thumb.Child = new Image { Source = w.Icon, Width = 56, Height = 56 };
             var icon = new Image { Source = w.Icon, Width = 18, Height = 18, Margin = new Thickness(0, 0, 8, 0) };
@@ -125,7 +125,7 @@ public sealed class AltTab : Window
             var stack = new StackPanel();
             stack.Children.Add(thumb);
             stack.Children.Add(caption);
-            var card = new Border { CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Margin = new Thickness(6), BorderThickness = new Thickness(1.5), Child = stack, Cursor = System.Windows.Input.Cursors.Hand, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new ScaleTransform(1, 1) };
+            var card = new Border { CornerRadius = Theme.R(14), Padding = new Thickness(8), Margin = new Thickness(6), BorderThickness = new Thickness(1.5), Child = stack, Cursor = System.Windows.Input.Cursors.Hand, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new ScaleTransform(1, 1) };
             int i = _slots.Count;
             card.MouseLeftButtonUp += (_, _) => { _index = i; Commit(); };
             _cards.Children.Add(card);

@@ -516,7 +516,7 @@ public sealed class TerminalWindow : Window
             var row = new StackPanel { Orientation = Orientation.Horizontal };
             row.Children.Add(t);
             row.Children.Add(close);
-            var pill = new Border { CornerRadius = new CornerRadius(9), Height = 30, Margin = new Thickness(0, 0, 4, 0), Child = row, Cursor = Cursors.Hand, BorderThickness = new Thickness(1) };
+            var pill = new Border { CornerRadius = Theme.R(9), Height = 30, Margin = new Thickness(0, 0, 4, 0), Child = row, Cursor = Cursors.Hand, BorderThickness = new Thickness(1) };
             if (v == _active) { pill.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt"); pill.SetResourceReference(Border.BorderBrushProperty, "Border"); }
             else { pill.Background = Brushes.Transparent; pill.BorderBrush = Brushes.Transparent; }
             pill.MouseLeftButtonUp += (_, _) => Activate(view);

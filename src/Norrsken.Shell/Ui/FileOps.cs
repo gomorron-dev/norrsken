@@ -123,7 +123,12 @@ public static class Files
         return rc == 0 && !op.fAnyOperationsAborted;
     }
 
-    public static bool Recycle(IntPtr owner, IEnumerable<string> paths) => Op(owner, FO_DELETE, paths, null, FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_WANTNUKEWARNING);
+    public static bool Recycle(IntPtr owner, IEnumerable<string> paths)
+    {
+        bool ok = Op(owner, FO_DELETE, paths, null, FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_WANTNUKEWARNING);
+        Sound.Play(ok ? "trash" : "error");
+        return ok;
+    }
     public static bool DeleteForever(IntPtr owner, IEnumerable<string> paths) => Op(owner, FO_DELETE, paths, null, 0);
     public static bool Copy(IntPtr owner, IEnumerable<string> paths, string dest) => Op(owner, FO_COPY, paths, dest, FOF_ALLOWUNDO | FOF_RENAMEONCOLLISION);
     public static bool Move(IntPtr owner, IEnumerable<string> paths, string dest) => Op(owner, FO_MOVE, paths, dest, FOF_ALLOWUNDO);

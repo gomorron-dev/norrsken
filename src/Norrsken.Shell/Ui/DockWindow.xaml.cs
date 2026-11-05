@@ -26,7 +26,11 @@ public partial class DockWindow : Window
 {
     const int HotkeyLauncher = 1;
     const double ReserveDip = 72;
-    const double IconSize = 42, CellWidth = 54, Amp = 0.55, Sigma = 64;
+    const double IconSize = 42, CellWidth = 54, Sigma = 64;
+    /// <summary>Magnification strength from Settings (0 = off-ish … 1 = huge).</summary>
+    static double Amp => Math.Clamp(App.Settings.MagnifyAmount, 0.05, 1.2);
+    /// <summary>Dock size from Settings: the whole dock scales as one (icons, pill, clock, magnification room).</summary>
+    static double Size => Math.Clamp(App.Settings.DockScale, 0.7, 1.5);
     const double DragThreshold = 6, RemoveLift = 70, HiddenOffset = 100;
 
     IntPtr _hwnd;
@@ -115,6 +119,7 @@ public partial class DockWindow : Window
 
     void PositionWindow()
     {
+        Height = Math.Round(150 * Math.Max(1, Size) + (Amp > 0.55 ? (Amp - 0.55) * 60 * Size : 0));
         Width = SystemParameters.PrimaryScreenWidth;
         Left = 0;
         Top = SystemParameters.PrimaryScreenHeight - Height;
@@ -128,7 +133,7 @@ public partial class DockWindow : Window
         double scale = VisualTreeHelper.GetDpi(this).DpiScaleY;
         int sw = GetSystemMetrics(SM_CXSCREEN), sh = GetSystemMetrics(SM_CYSCREEN);
         bool reserve = App.Settings.ReserveSpace && !App.Settings.AutoHide;
-        int h = reserve ? (int)Math.Round(ReserveDip * scale) : 0;
+        int h = reserve ? (int)Math.Round(ReserveDip * Size * scale) : 0;
         var abd = NewAppBarData();
         abd.uEdge = ABE_BOTTOM;
         abd.rc = new RECT { Left = 0, Top = sh - h, Right = sw, Bottom = sh };
@@ -257,6 +262,8 @@ public partial class DockWindow : Window
         var vis = App.Settings.ShowClock ? Visibility.Visible : Visibility.Collapsed;
         ClockCell.Visibility = Div2.Visibility = vis;
         BinCell.Visibility = Div4.Visibility = App.Settings.ShowBinInDock ? Visibility.Visible : Visibility.Collapsed;
+        DockHost.LayoutTransform = Math.Abs(Size - 1) < 0.01 ? Transform.Identity : new ScaleTransform(Size, Size);
+        if (_hwnd != IntPtr.Zero) PositionWindow();
         UpdateClock();
         ScheduleClock();
         SetAppBarPos();
@@ -346,6 +353,7 @@ public partial class DockWindow : Window
 
     void Rise()
     {
+        Sound.Play("startup");
         if (Motion.Reduced) { _risen = true; return; }
         Motion.From(DockShift, TranslateTransform.YProperty, 90, 0, 620, Motion.SoftSpring);
         Motion.From(DockHost, OpacityProperty, 0, 1, 360, done: () => _risen = true);
@@ -616,6 +624,7 @@ public partial class DockWindow : Window
         }
         if (hovered != null && label != null)
         {
+            if (HoverText.Text != label) Sound.Play("hover");
             HoverText.Text = label;
             _labelTarget = hovered;
         }
@@ -957,8 +966,12 @@ public partial class DockWindow : Window
     internal FrameworkElement LauncherAnchor => LauncherCell;
 
     /// <summary>Not running: launch. One window: focus/minimise. Several: cycle through them.</summary>
+    int _notifySeen;
+    bool _badgesSeen;
+
     void Activate(DockItem item, FrameworkElement lift)
     {
+        Sound.Play("click");
         var windows = item.Windows.Where(w => IsWindow(w.Handle)).ToList();
         if (windows.Count == 0)
         {
@@ -1243,6 +1256,9 @@ public partial class DockWindow : Window
             Notifications.Changed += () => Dispatcher.BeginInvoke(UpdateBadges);
             NotificationCentre.FocusChanged += () => Dispatcher.BeginInvoke(UpdateBadges);
         }
+        if (Notifications.Items.Count > _notifySeen && _badgesSeen) Sound.Play("notify");
+        _notifySeen = Notifications.Items.Count;
+        _badgesSeen = true;
         NotifyDot.Visibility = Notifications.Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         string? focus = NotificationCentre.FocusRemaining;
         FocusText.Visibility = focus != null ? Visibility.Visible : Visibility.Collapsed;
@@ -1323,6 +1339,7 @@ public partial class DockWindow : Window
         // The click that deactivated (and hid) the launcher shouldn't immediately reopen it.
         if ((DateTime.UtcNow - _launcher.LastHidden).TotalMilliseconds < 250) return;
         SummonForLauncher();
+        Sound.Play("launcher");
         _launcher.ShowCentered();
     }
 

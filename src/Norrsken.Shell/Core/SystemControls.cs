@@ -225,7 +225,7 @@ public static class AudioControl
     public sealed record Device(string Id, string Name, bool IsDefault);
     public sealed record Session(int Pid, string Name, float Volume, object Control);
 
-    static IMMDeviceEnumerator Enumerator() => (IMMDeviceEnumerator)new MMDeviceEnumerator();
+    static IMMDeviceEnumerator Enumerator() => (IMMDeviceEnumerator)Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("BCDE0395-E52F-467C-8E3D-C4579291692E"))!)!;
 
     static string NameOf(IMMDevice d)
     {

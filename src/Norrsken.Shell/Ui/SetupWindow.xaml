@@ -6,7 +6,7 @@
   <Border x:Name="Root" BorderBrush="{DynamicResource Border}" BorderThickness="1" Padding="40,36,40,30"
           TextElement.Foreground="{DynamicResource Text}" TextElement.FontFamily="{StaticResource UiFont}">
     <StackPanel>
-      <Border Width="52" Height="52" CornerRadius="15" Background="{DynamicResource Text}" HorizontalAlignment="Left">
+      <Border Width="52" Height="52" CornerRadius="{DynamicResource R15}" Background="{DynamicResource Text}" HorizontalAlignment="Left">
         <Viewbox Margin="12">
           <Canvas Width="24" Height="24">
             <Path Data="M3,14 C6,4 10,4 12,9.5 C14,15 18,15 21,5" Stroke="{DynamicResource SurfaceSolid}"

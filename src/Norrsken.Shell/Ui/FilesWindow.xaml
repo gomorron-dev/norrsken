@@ -7,7 +7,7 @@
         WindowStyle="None" ResizeMode="CanResize" WindowStartupLocation="CenterScreen"
         Background="{DynamicResource SurfaceSolid}" FontFamily="{StaticResource UiFont}">
   <WindowChrome.WindowChrome>
-    <WindowChrome CaptionHeight="52" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
+    <WindowChrome CaptionHeight="52" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="{DynamicResource R0}" UseAeroCaptionButtons="False"/>
   </WindowChrome.WindowChrome>
 
   <Window.Resources>
@@ -21,8 +21,8 @@
         <Setter.Value>
           <ControlTemplate TargetType="ListBoxItem">
             <Grid Margin="0,1" Cursor="Hand" Background="Transparent">
-              <Border x:Name="Sel" CornerRadius="9" Background="{DynamicResource Selection}" Opacity="0"/>
-              <Border x:Name="HoverLayer" CornerRadius="9" Background="{DynamicResource Hover}" Opacity="0"/>
+              <Border x:Name="Sel" CornerRadius="{DynamicResource R9}" Background="{DynamicResource Selection}" Opacity="0"/>
+              <Border x:Name="HoverLayer" CornerRadius="{DynamicResource R9}" Background="{DynamicResource Hover}" Opacity="0"/>
               <Border Padding="10,7"><ContentPresenter/></Border>
             </Grid>
             <ControlTemplate.Triggers>
@@ -42,8 +42,8 @@
         <Setter.Value>
           <ControlTemplate TargetType="ListBoxItem">
             <Grid Margin="2" Background="Transparent">
-              <Border x:Name="Sel" CornerRadius="10" Background="{DynamicResource Selection}" BorderBrush="{DynamicResource Border}" BorderThickness="1" Opacity="0"/>
-              <Border x:Name="HoverLayer" CornerRadius="10" Background="{DynamicResource Hover}" Opacity="0"/>
+              <Border x:Name="Sel" CornerRadius="{DynamicResource R10}" Background="{DynamicResource Selection}" BorderBrush="{DynamicResource Border}" BorderThickness="1" Opacity="0"/>
+              <Border x:Name="HoverLayer" CornerRadius="{DynamicResource R10}" Background="{DynamicResource Hover}" Opacity="0"/>
               <ContentPresenter/>
             </Grid>
             <ControlTemplate.Triggers>
@@ -62,7 +62,7 @@
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="RadioButton">
-            <Border x:Name="Bd" CornerRadius="9" Padding="12,5,6,5" Margin="0,0,4,0" Background="Transparent" BorderThickness="1" BorderBrush="Transparent" MaxWidth="220">
+            <Border x:Name="Bd" CornerRadius="{DynamicResource R9}" Padding="12,5,6,5" Margin="0,0,4,0" Background="Transparent" BorderThickness="1" BorderBrush="Transparent" MaxWidth="220">
               <ContentPresenter/>
             </Border>
             <ControlTemplate.Triggers>
@@ -166,7 +166,7 @@
             </Button>
           </StackPanel>
           <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0" WindowChrome.IsHitTestVisibleInChrome="True">
-            <Border CornerRadius="10" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" Width="200" Height="32" Margin="0,0,6,0">
+            <Border CornerRadius="{DynamicResource R10}" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" Width="200" Height="32" Margin="0,0,6,0">
               <Grid Margin="10,0">
                 <TextBlock x:Name="SearchHint" Text="Search  ·  Enter for subfolders" FontSize="12.5" Foreground="{DynamicResource TextDim}" VerticalAlignment="Center" IsHitTestVisible="False"/>
                 <TextBox x:Name="SearchBox" Style="{StaticResource PlainTextBox}" FontSize="13" TextChanged="Search_TextChanged" KeyDown="Search_KeyDown"/>
@@ -186,7 +186,7 @@
             </Button>
           </StackPanel>
           <!-- Breadcrumb; click empty space (or Ctrl+L) to type a path -->
-          <Border x:Name="PathBox" Margin="6,10" CornerRadius="10" Background="Transparent" WindowChrome.IsHitTestVisibleInChrome="True"
+          <Border x:Name="PathBox" Margin="6,10" CornerRadius="{DynamicResource R10}" Background="Transparent" WindowChrome.IsHitTestVisibleInChrome="True"
                   MouseLeftButtonDown="PathBox_MouseDown" Cursor="IBeam">
             <Grid>
               <ScrollViewer x:Name="CrumbScroll" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" Focusable="False">
@@ -255,11 +255,11 @@
 
         <!-- Name prompt (rename, new folder, new file) -->
         <Grid x:Name="NamePrompt" Grid.RowSpan="5" Visibility="Collapsed" Background="#66000000">
-          <Border x:Name="NameCard" Width="400" CornerRadius="16" Padding="22" Background="{DynamicResource SurfaceSolid}"
+          <Border x:Name="NameCard" Width="400" CornerRadius="{DynamicResource R16}" Padding="22" Background="{DynamicResource SurfaceSolid}"
                   BorderBrush="{DynamicResource DockLine}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel>
               <TextBlock x:Name="NameTitle" FontFamily="{StaticResource DisplayFont}" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource Text}"/>
-              <Border CornerRadius="10" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" Height="36" Margin="0,14,0,0" Padding="10,0">
+              <Border CornerRadius="{DynamicResource R10}" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" Height="36" Margin="0,14,0,0" Padding="10,0">
                 <TextBox x:Name="NameBox" Style="{StaticResource PlainTextBox}" FontSize="14" KeyDown="NameBox_KeyDown"/>
               </Border>
               <TextBlock x:Name="NameError" Style="{StaticResource Note}" Margin="2,8,0,0"/>
@@ -274,7 +274,7 @@
 
       <!-- Quick Look (Space) -->
       <Grid x:Name="QuickLook" Grid.ColumnSpan="2" Visibility="Collapsed" Background="#B3000000" MouseLeftButtonDown="QuickLook_MouseDown">
-        <Border x:Name="QuickCard" CornerRadius="18" Background="{DynamicResource SurfaceSolid}" BorderBrush="{DynamicResource DockLine}" BorderThickness="1"
+        <Border x:Name="QuickCard" CornerRadius="{DynamicResource R18}" Background="{DynamicResource SurfaceSolid}" BorderBrush="{DynamicResource DockLine}" BorderThickness="1"
                 Margin="60" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="16" RenderTransformOrigin="0.5,0.5">
           <Border.RenderTransform><ScaleTransform x:Name="QuickScale"/></Border.RenderTransform>
           <DockPanel>

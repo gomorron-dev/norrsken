@@ -38,7 +38,15 @@ $zip = Join-Path $out "Norrsken-$version.zip"
 Remove-Item $zip -ErrorAction SilentlyContinue
 Write-Host "== Zipping $payload"
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-[IO.Compression.ZipFile]::CreateFromDirectory($payload, $zip, [IO.Compression.CompressionLevel]::Optimal, $false)
+# Everything but sfx\ (interface sounds from a personal library: they ship on sticks and installs, not publicly).
+$archive = [IO.Compression.ZipFile]::Open($zip, [IO.Compression.ZipArchiveMode]::Create)
+try {
+    Get-ChildItem $payload -Recurse -File | Where-Object { $_.FullName.Substring($payload.Length + 1) -notlike 'sfx\*' } | ForEach-Object {
+        $rel = $_.FullName.Substring($payload.Length + 1).Replace('\', '/')
+        [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $_.FullName, $rel, [IO.Compression.CompressionLevel]::Optimal)
+    }
+}
+finally { $archive.Dispose() }
 Write-Host "   $([math]::Round((Get-Item $zip).Length / 1MB)) MB"
 
 Write-Host "== Publishing $tag to github.com/$repo"

@@ -10,14 +10,14 @@
       <TransformGroup><ScaleTransform x:Name="CardScale"/><TranslateTransform x:Name="CardShift"/></TransformGroup>
     </Grid.RenderTransform>
 
-    <Border CornerRadius="22" Background="{DynamicResource SurfaceSolid}">
+    <Border CornerRadius="{DynamicResource R22}" Background="{DynamicResource SurfaceSolid}">
       <Border.Effect>
         <DropShadowEffect BlurRadius="36" ShadowDepth="10" Direction="270"
                           Color="{DynamicResource ShadowColor}" Opacity="{DynamicResource ShadowOpacity}"/>
       </Border.Effect>
     </Border>
 
-    <Border CornerRadius="22" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource DockLine}" BorderThickness="1"
+    <Border CornerRadius="{DynamicResource R22}" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource DockLine}" BorderThickness="1"
             Padding="18,16,18,14" TextElement.Foreground="{DynamicResource Text}" TextElement.FontFamily="{StaticResource UiFont}">
       <StackPanel x:Name="Body">
         <!-- Time & date -->
@@ -40,7 +40,7 @@
               <ColumnDefinition Width="*"/>
               <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Border x:Name="ArtFrame" Width="54" Height="54" CornerRadius="11" Background="{DynamicResource Pressed}">
+            <Border x:Name="ArtFrame" Width="54" Height="54" CornerRadius="{DynamicResource R11}" Background="{DynamicResource Pressed}">
               <ui:GlyphIcon x:Name="ArtGlyph" Glyph="music" Width="22" Height="22" Foreground="{DynamicResource TextDim}"/>
             </Border>
             <StackPanel Grid.Column="1" Margin="12,0,8,0" VerticalAlignment="Center">

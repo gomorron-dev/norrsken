@@ -97,6 +97,7 @@ internal static partial class UiTest
             await Wait(150);
             if (settings.CurrentPage is not { } page || AllText(page).Any(t => t.Contains("couldn't load"))) failed.Add(id);
             if (id is "apps" or "about") Snap(settings, "ui-33-settings-" + id);
+            if (id == "customise") { await Wait(500); Snap(settings, "ui-33-settings-customise"); }
         }
         Check("settings.pages", failed.Count == 0, failed.Count == 0 ? $"{settings.PageIds.Count()} pages built" : "failed: " + string.Join(", ", failed));
         settings.Close();

@@ -16,15 +16,15 @@
           <ControlTemplate TargetType="RadioButton">
             <Grid x:Name="Root" RenderTransformOrigin="0.5,0.5" Background="Transparent">
               <Grid.RenderTransform><ScaleTransform x:Name="Sc"/></Grid.RenderTransform>
-              <Border x:Name="Bd" CornerRadius="14" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1"/>
-              <Border x:Name="HoverLayer" CornerRadius="14" Background="{DynamicResource Hover}" Opacity="0"/>
-              <Border x:Name="Fill" CornerRadius="14" Background="{DynamicResource Text}" Opacity="0"/>
+              <Border x:Name="Bd" CornerRadius="{DynamicResource R14}" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1"/>
+              <Border x:Name="HoverLayer" CornerRadius="{DynamicResource R14}" Background="{DynamicResource Hover}" Opacity="0"/>
+              <Border x:Name="Fill" CornerRadius="{DynamicResource R14}" Background="{DynamicResource Accent}" Opacity="0"/>
               <Border Padding="14,5"><ContentPresenter TextElement.FontSize="12.5"/></Border>
             </Grid>
             <ControlTemplate.Triggers>
               <Trigger Property="IsMouseOver" Value="True"><Trigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="HoverLayer" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12"/></Storyboard></BeginStoryboard></Trigger.EnterActions><Trigger.ExitActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="HoverLayer" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.25"/></Storyboard></BeginStoryboard></Trigger.ExitActions></Trigger>
               <Trigger Property="IsChecked" Value="True">
-                <Setter Property="Foreground" Value="{DynamicResource SurfaceSolid}"/>
+                <Setter Property="Foreground" Value="{DynamicResource AccentText}"/>
                 <Setter TargetName="Fill" Property="Opacity" Value="1"/>
               </Trigger>
               <Trigger Property="IsPressed" Value="True"><Trigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="Sc" Storyboard.TargetProperty="ScaleX" To="0.94" Duration="0:0:0.08"/><DoubleAnimation Storyboard.TargetName="Sc" Storyboard.TargetProperty="ScaleY" To="0.94" Duration="0:0:0.08"/></Storyboard></BeginStoryboard></Trigger.EnterActions><Trigger.ExitActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="Sc" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.45"><DoubleAnimation.EasingFunction><ElasticEase Oscillations="1" Springiness="5" EasingMode="EaseOut"/></DoubleAnimation.EasingFunction></DoubleAnimation><DoubleAnimation Storyboard.TargetName="Sc" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.45"><DoubleAnimation.EasingFunction><ElasticEase Oscillations="1" Springiness="5" EasingMode="EaseOut"/></DoubleAnimation.EasingFunction></DoubleAnimation></Storyboard></BeginStoryboard></Trigger.ExitActions></Trigger>            </ControlTemplate.Triggers>
@@ -34,7 +34,7 @@
     </Style>
 
     <DataTemplate x:Key="AppTile">
-      <Border x:Name="Bd" Width="98" Height="96" Margin="2" CornerRadius="14" Background="Transparent" Cursor="Hand"
+      <Border x:Name="Bd" Width="98" Height="96" Margin="2" CornerRadius="{DynamicResource R14}" Background="Transparent" Cursor="Hand"
               MouseLeftButtonUp="AppTile_Click" AutomationProperties.Name="{Binding Name}">
         <Border.ContextMenu>
           <ContextMenu>
@@ -60,13 +60,13 @@
       <TransformGroup><ScaleTransform x:Name="CardScale"/><TranslateTransform x:Name="CardShift"/></TransformGroup>
     </Grid.RenderTransform>
 
-    <Border CornerRadius="22" Background="{DynamicResource SurfaceSolid}">
+    <Border CornerRadius="{DynamicResource R22}" Background="{DynamicResource SurfaceSolid}">
       <Border.Effect>
         <DropShadowEffect BlurRadius="40" ShadowDepth="12" Direction="270" Color="{DynamicResource ShadowColor}" Opacity="{DynamicResource ShadowOpacity}"/>
       </Border.Effect>
     </Border>
 
-    <Border x:Name="Root" CornerRadius="22" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource DockLine}"
+    <Border x:Name="Root" CornerRadius="{DynamicResource R22}" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource DockLine}"
             BorderThickness="1" TextElement.Foreground="{DynamicResource Text}" TextElement.FontFamily="{StaticResource UiFont}">
       <Grid>
         <Grid.RowDefinitions>
@@ -78,7 +78,7 @@
         </Grid.RowDefinitions>
 
         <!-- Search -->
-        <Border Margin="20,18,20,0" Height="46" CornerRadius="23" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+        <Border Margin="20,18,20,0" Height="46" CornerRadius="{DynamicResource R23}" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1">
           <Grid Margin="18,0">
             <TextBlock Text="&#xE721;" FontFamily="{StaticResource IconFont}" FontSize="15" Foreground="{DynamicResource TextDim}" VerticalAlignment="Center"/>
             <TextBox x:Name="SearchBox" Margin="30,0,40,0" Style="{StaticResource PlainTextBox}" FontFamily="{StaticResource DisplayFont}" FontSize="17"
@@ -145,14 +145,14 @@
           <ScrollViewer x:Name="ResultsScroll" VerticalScrollBarVisibility="Auto" Focusable="False">
             <StackPanel x:Name="ResultsPanel" Margin="0,0,10,10"/>
           </ScrollViewer>
-          <Border x:Name="PreviewCard" Grid.Column="1" CornerRadius="16" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" Margin="0,0,0,10">
+          <Border x:Name="PreviewCard" Grid.Column="1" CornerRadius="{DynamicResource R16}" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" Margin="0,0,0,10">
             <StackPanel x:Name="PreviewPanel" Margin="20"/>
           </Border>
           <TextBlock x:Name="EmptyText" Grid.ColumnSpan="2" Foreground="{DynamicResource TextDim}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" Visibility="Collapsed"/>
         </Grid>
 
         <!-- Profile and power -->
-        <Border Grid.Row="4" Margin="14,4,14,14" CornerRadius="16" Background="{DynamicResource SurfaceAlt}" Padding="10,6">
+        <Border Grid.Row="4" Margin="14,4,14,14" CornerRadius="{DynamicResource R16}" Background="{DynamicResource SurfaceAlt}" Padding="10,6">
           <DockPanel>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
               <Button Style="{StaticResource IconButton}" Width="36" Height="36" ToolTip="Sleep" Click="Sleep_Click"><TextBlock Text="&#xE708;" FontFamily="{StaticResource IconFont}" FontSize="14"/></Button>
@@ -165,7 +165,7 @@
             </StackPanel>
             <Button Style="{StaticResource IconButton}" HorizontalAlignment="Left" Click="Account_Click" ToolTip="Your account">
               <StackPanel Orientation="Horizontal" Margin="4,3,12,3">
-                <Border Width="30" Height="30" CornerRadius="15" ClipToBounds="True" Background="{DynamicResource Pressed}">
+                <Border Width="30" Height="30" CornerRadius="{DynamicResource R15}" ClipToBounds="True" Background="{DynamicResource Pressed}">
                   <Grid>
                     <TextBlock x:Name="Initial" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource Text}"/>
                     <Ellipse x:Name="Avatar" Width="30" Height="30"/>

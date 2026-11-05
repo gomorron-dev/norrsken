@@ -32,6 +32,44 @@ public sealed class ShellSettings
     public bool WinKeyOpensLauncher { get; set; } = true;
     /// <summary>Norrsken (and Flickerbox) install new GitHub releases on their own.</summary>
     public bool AutoUpdate { get; set; } = true;
+    // ── Look: accent, shape, dock ──
+    /// <summary>Accent colour for on/selected states: "" keeps Norrsken monochrome; an id from Theme.Accents or "#RRGGBB".</summary>
+    public string Accent { get; set; } = "";
+    /// <summary>Corner roundness: 0 square, 0.5 subtle, 1 Norrsken, 1.5 extra round.</summary>
+    public double CornerScale { get; set; } = 1.0;
+    /// <summary>Dock size: 0.8 compact … 1.4 large (icons, pill and clock together).</summary>
+    public double DockScale { get; set; } = 1.0;
+    /// <summary>How much icons grow under the pointer (0.55 = 55 %).</summary>
+    public double MagnifyAmount { get; set; } = 0.55;
+    /// <summary>Dock background opacity, 0.4 (glassy) … 1 (solid).</summary>
+    public double DockOpacity { get; set; } = 1.0;
+
+    // ── Motion ──
+    /// <summary>Animation duration multiplier: 0.6 brisk … 1 normal … 1.5 relaxed.</summary>
+    public double AnimationScale { get; set; } = 1.0;
+    /// <summary>"natural", "springy", "smooth" or "snappy".</summary>
+    public string MotionStyle { get; set; } = "natural";
+
+    // ── Sound ──
+    /// <summary>Interface sounds. Off until turned on in Settings › Sound.</summary>
+    public bool Sounds { get; set; } = false;
+    public double SoundVolume { get; set; } = 0.5;
+    /// <summary>Folder of the sound pack ("" = the one that ships with Norrsken).</summary>
+    public string SoundPack { get; set; } = "";
+    /// <summary>Everything about the look and sound, in one string: app windows compare it to follow changes live.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string LookKey => string.Join("|", Theme, Accent, CornerScale, DockScale, MagnifyAmount, DockOpacity, AnimationScale, MotionStyle, Sounds, SoundVolume, SoundPack, string.Join(",", MutedSounds), ReduceMotion);
+
+    /// <summary>Copies the look and sound settings from another copy (a newer save from the dock).</summary>
+    public void TakeLook(ShellSettings s)
+    {
+        Theme = s.Theme; Accent = s.Accent; CornerScale = s.CornerScale; DockScale = s.DockScale; MagnifyAmount = s.MagnifyAmount; DockOpacity = s.DockOpacity;
+        AnimationScale = s.AnimationScale; MotionStyle = s.MotionStyle; Sounds = s.Sounds; SoundVolume = s.SoundVolume; SoundPack = s.SoundPack;
+        MutedSounds = [.. s.MutedSounds]; ReduceMotion = s.ReduceMotion;
+    }
+
+    /// <summary>Events whose sound you've switched off.</summary>
+    public List<string> MutedSounds { get; set; } = ["hover", "volume"];
     /// <summary>The Bin in the dock (drop files on it, click to open).</summary>
     public bool ShowBinInDock { get; set; } = true;
     /// <summary>Bin items older than this many days are removed for good (0: never).</summary>

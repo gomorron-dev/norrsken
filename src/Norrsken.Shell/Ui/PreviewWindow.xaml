@@ -12,7 +12,7 @@
       </ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate>
         <DataTemplate>
-          <Border x:Name="SlotBd" Width="252" CornerRadius="12" Padding="8,7,8,8" Margin="2" Background="Transparent"
+          <Border x:Name="SlotBd" Width="252" CornerRadius="{DynamicResource R12}" Padding="8,7,8,8" Margin="2" Background="Transparent"
                   Cursor="Hand" MouseLeftButtonUp="Slot_Click" AutomationProperties.Name="{Binding Title}">
             <StackPanel>
               <DockPanel Margin="2,0,0,7" Height="22">
@@ -24,7 +24,7 @@
                 <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Text="{Binding Title}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
               </DockPanel>
-              <Border x:Name="Thumb" Height="142" CornerRadius="7" Background="{DynamicResource SurfaceAlt}">
+              <Border x:Name="Thumb" Height="142" CornerRadius="{DynamicResource R7}" Background="{DynamicResource SurfaceAlt}">
                 <!-- Shown if the window can't be previewed (e.g. minimised); DWM draws over it otherwise. -->
                 <Image Source="{Binding Icon}" Width="40" Height="40" Opacity="0.45"/>
               </Border>
