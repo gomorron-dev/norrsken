@@ -127,6 +127,7 @@ public static class Files
     {
         bool ok = Op(owner, FO_DELETE, paths, null, FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_WANTNUKEWARNING);
         Sound.Play(ok ? "trash" : "error");
+        Bin.Touch();
         return ok;
     }
     public static bool DeleteForever(IntPtr owner, IEnumerable<string> paths) => Op(owner, FO_DELETE, paths, null, 0);

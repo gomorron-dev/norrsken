@@ -1023,6 +1023,7 @@ public partial class FilesWindow : Window
             Task.Run(() => Files.Measure(dir, cts.Token)).ContinueWith(t =>
             {
                 if (cts.IsCancellationRequested) return;
+                if (t.Status != TaskStatus.RanToCompletion) { size.Text = "Couldn't measure this folder"; return; }
                 var (bytes, files, folders) = t.Result;
                 size.Text = $"{Files.FormatSize(bytes)}  ·  {files:N0} files, {folders:N0} folders";
             }, TaskScheduler.FromCurrentSynchronizationContext());

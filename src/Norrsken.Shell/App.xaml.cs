@@ -29,7 +29,14 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        FrameRate.Apply(); // before any animation exists: everything moves at the display's refresh rate
+        // Every mode (dock, apps, the capture tool, helpers) logs unexpected errors and keeps running instead of vanishing.
+        DispatcherUnhandledException += (_, ex) =>
+        {
+            Log.Write("Unhandled: " + ex.Exception);
+            ex.Handled = true;
+        };
+        TaskScheduler.UnobservedTaskException += (_, ex) => { Log.Write("Unobserved task: " + ex.Exception.GetBaseException().Message); ex.SetObserved(); };
+        AppDomain.CurrentDomain.UnhandledException += (_, ex) => Log.Write("Fatal: " + ex.ExceptionObject);        FrameRate.Apply(); // before any animation exists: everything moves at the display's refresh rate
         Ui.Switches.Register();
         Sound.RegisterSwitchSounds();
 
@@ -246,11 +253,6 @@ public partial class App : Application
             return;
         }
 
-        DispatcherUnhandledException += (_, ex) =>
-        {
-            Log.Write("Unhandled: " + ex.Exception);
-            ex.Handled = true; // a shell must stay up; the error is logged for diagnosis
-        };
 
         var quitEvent = new EventWaitHandle(false, EventResetMode.AutoReset, QuitEventName);
         new Thread(() => { quitEvent.WaitOne(); Dispatcher.BeginInvoke(Quit); }) { IsBackground = true }.Start();

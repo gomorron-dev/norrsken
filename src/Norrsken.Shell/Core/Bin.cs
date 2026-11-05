@@ -272,6 +272,26 @@ public static class Bin
 
     static void Raise() => System.Windows.Application.Current?.Dispatcher.BeginInvoke(() => { if (_debounce != null) { _debounce.Stop(); _debounce.Start(); } else Changed?.Invoke(); });
 
+    /// <summary>
+    /// Something was just deleted through Norrsken. A drive's bin folder only appears on its first delete, so
+    /// any new one starts being watched here too.
+    /// </summary>
+    public static void Touch()
+    {
+        if (_debounce != null && TestRoot == null)
+            foreach (var f in Folders())
+                if (Watchers.All(w => !string.Equals(w.Path, f, StringComparison.OrdinalIgnoreCase)))
+                    try
+                    {
+                        var w = new FileSystemWatcher(f, "$I*") { NotifyFilter = NotifyFilters.FileName, EnableRaisingEvents = true };
+                        w.Created += (_, _) => Raise();
+                        w.Deleted += (_, _) => Raise();
+                        Watchers.Add(w);
+                    }
+                    catch (Exception) { }
+        Raise();
+    }
+
     static void Notify(string dir)
     {
         try { SHChangeNotify(0x00001000 /* SHCNE_UPDATEDIR */, 0x0005 /* SHCNF_PATHW */, dir, IntPtr.Zero); } catch (Exception) { }

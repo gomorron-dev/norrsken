@@ -797,6 +797,7 @@ public partial class SettingsWindow
         cleanBtn.IsEnabled = false;
         _ = Task.Run(Maintenance.TempSize).ContinueWith(t =>
         {
+            if (t.Status != TaskStatus.RanToCompletion) { ((TextBlock)((StackPanel)tempRow.Children[^1]).Children[1]).Text = "Couldn't measure the temporary files"; return; }
             var (bytes, files) = t.Result;
             ((TextBlock)((StackPanel)tempRow.Children[^1]).Children[1]).Text = $"{Files.FormatSize(bytes)} in {files:N0} files that apps and Windows left behind";
             cleanBtn.IsEnabled = bytes > 0;
