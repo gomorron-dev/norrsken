@@ -136,6 +136,7 @@ public static class KeyboardHook
                 // While the window overview (Win+Tab) is open, arrows, Tab, Enter and Esc drive it.
                 if (down && OverviewOpen && k.vkCode is 0x1B or 0x25 or 0x26 or 0x27 or 0x28 or 0x0D or 0x09)
                 {
+                    if (k.vkCode == 0x09 && (_lwin || _rwin)) { SwallowUp.Add(k.vkCode); _ui?.BeginInvoke(() => Pressed?.Invoke("overview")); return 1; } // Win+Tab again closes it
                     string a = k.vkCode switch { 0x1B => "overview-cancel", 0x0D => "overview-commit", 0x25 or 0x26 => "overview-left", _ => "overview-right" };
                     SwallowUp.Add(k.vkCode);
                     _ui?.BeginInvoke(() => Pressed?.Invoke(a));

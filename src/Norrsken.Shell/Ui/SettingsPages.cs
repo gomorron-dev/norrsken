@@ -308,7 +308,10 @@ public partial class SettingsWindow
         s.Children.Add(Heading("Shape"));
         double[] corners = [0, 0.5, 1, 1.5];
         int ci = Array.FindIndex(corners, c => Math.Abs(c - set.CornerScale) < 0.01);
-        s.Children.Add(Group(Row("Corners", "Windows, cards, buttons and the dock.", Choices(["Square", "Subtle", "Norrsken", "Round"], ci < 0 ? 2 : ci, i => { set.CornerScale = corners[i]; LookChanged(); }))));
+        string[] pointers = ["dark", "light", "accent"];
+        s.Children.Add(Group(
+            Row("Corners", "Windows, cards, buttons and the dock.", Choices(["Square", "Subtle", "Norrsken", "Round"], ci < 0 ? 2 : ci, i => { set.CornerScale = corners[i]; LookChanged(); })),
+            Row("Pointer", "Norrsken's mouse pointers, in dark, light or your accent colour.", Choices(["Dark", "Light", "Accent"], Math.Max(0, Array.IndexOf(pointers, set.CursorStyle)), i => { set.CursorStyle = pointers[i]; set.Save(); NorrskenCursors.Apply(); }))));
 
         // ── Dock ──
         s.Children.Add(Heading("Dock"));

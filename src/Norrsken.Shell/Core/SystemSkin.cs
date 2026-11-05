@@ -83,42 +83,47 @@ public static class FrameStyler
 }
 
 /// <summary>
-/// Norrsken's pointer set: black shapes with a white rim (readable on any background), drawn
-/// here at 32/48/64 px and installed as this account's cursor scheme. The previous scheme is
-/// saved first and put back if the setting is switched off.
+/// Norrsken's pointers, drawn here and installed as this account's cursor scheme (the previous one is saved
+/// and put back if you switch them off). Rounded shapes with a crisp rim, a soft real shadow and a faint sheen,
+/// in six sizes up to 128 px so they stay sharp at any display scaling. The busy pointers actually spin.
+/// Style: dark (default), light, or your accent colour.
 /// </summary>
 public static class NorrskenCursors
 {
     [DllImport("user32.dll")] static extern bool SystemParametersInfoW(uint action, uint param, IntPtr value, uint flags);
     const uint SPI_SETCURSORS = 0x57;
     const string Key = @"Control Panel\Cursors";
-    const int Version = 1;
+    const int Version = 2;
 
     static string Dir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Norrsken", "cursors");
     static string Backup => Path.Combine(ShellSettings.Directory, "cursors-before-norrsken.json");
 
-    record Shape(string Name, string[] Fill, string[] Strokes, double HotX, double HotY, double Rotate = 0);
+    record Shape(string Name, string[] Fill, string[] Strokes, double HotX, double HotY, double Rotate = 0, bool Spins = false);
 
-    const string Arrow = "M3,2 L3,24 L8.5,18.8 L12,27 L15.6,25.5 L12.2,17.6 L19.5,17.6 Z";
-    const string DoubleArrow = "M16,3 L21.5,9.5 H18 V22.5 H21.5 L16,29 L10.5,22.5 H14 V9.5 H10.5 Z";
+    // Rounded corners everywhere: it reads softer and closer to the rest of Norrsken than a sharp classic arrow.
+    const string Arrow = "M4.5,2.6 L4.5,23.9 C4.5,24.7 5.4,25.1 6,24.5 L10.4,20.1 L13.4,27.2 C13.6,27.8 14.3,28 14.8,27.8 L17,26.9 C17.5,26.7 17.8,26.1 17.5,25.5 L14.5,18.6 L20.7,18.6 C21.5,18.6 21.9,17.6 21.3,17.1 L5.9,2 C5.4,1.5 4.5,1.9 4.5,2.6 Z";
+    const string DoubleArrow = "M16,3 L21.6,9.4 C21.9,9.8 21.6,10.4 21.1,10.4 H18 V21.6 H21.1 C21.6,21.6 21.9,22.2 21.6,22.6 L16,29 L10.4,22.6 C10.1,22.2 10.4,21.6 10.9,21.6 H14 V10.4 H10.9 C10.4,10.4 10.1,9.8 10.4,9.4 Z";
 
     static readonly Shape[] Shapes =
     [
-        new("Arrow", [Arrow], [], 3, 2),
-        new("Hand", ["M11,4 C12.4,4 13.4,5 13.4,6.4 V13 C14,12.6 15.8,12.5 16.4,13.6 C17.2,13 18.9,13.1 19.4,14.4 C20.2,14 22,14.3 22,16 V21 C22,25 19.5,28 15.5,28 H14 C11.5,28 10,26.8 8.6,24.8 L5,19.5 C4.3,18.4 4.7,17.2 5.7,16.8 C6.6,16.4 7.6,16.8 8.4,17.8 L8.6,18 V6.4 C8.6,5 9.6,4 11,4 Z"], [], 11, 4),
+        new("Arrow", [Arrow], [], 4.5, 2.6),
+        new("Hand", ["M11,3.6 C12.5,3.6 13.5,4.6 13.5,6.1 V12.8 C14.2,12.3 16,12.3 16.6,13.5 C17.4,12.9 19.2,13 19.7,14.4 C20.6,13.9 22.4,14.4 22.4,16.2 V21 C22.4,25.2 19.8,28.3 15.6,28.3 H14 C11.4,28.3 9.9,27 8.4,24.9 L4.8,19.6 C4.1,18.5 4.5,17.2 5.6,16.7 C6.6,16.3 7.6,16.8 8.4,17.8 L8.5,18 V6.1 C8.5,4.6 9.5,3.6 11,3.6 Z"], [], 11, 3.6),
         new("IBeam", [], ["M11.5,4.5 H13 C14.4,4.5 15.2,5 16,5.8 C16.8,5 17.6,4.5 19,4.5 H20.5 M16,5.8 V26.2 M11.5,27.5 H13 C14.4,27.5 15.2,27 16,26.2 C16.8,27 17.6,27.5 19,27.5 H20.5"], 16, 16),
-        new("Wait", [], ["M16,7 A9,9 0 1 1 15.99,7 Z"], 16, 16),
-        new("AppStarting", [Arrow], ["M24,19 A5,5 0 1 1 23.99,19 Z"], 3, 2),
-        new("Crosshair", [], ["M16,4 V13 M16,19 V28 M4,16 H13 M19,16 H28"], 16, 16),
+        new("Wait", [], [], 16, 16, Spins: true),
+        new("AppStarting", [Arrow], [], 4.5, 2.6, Spins: true),
+        new("Crosshair", [], ["M16,4 V12.5 M16,19.5 V28 M4,16 H12.5 M19.5,16 H28 M16,15.9 V16.1"], 16, 16),
         new("SizeNS", [DoubleArrow], [], 16, 16),
         new("SizeWE", [DoubleArrow], [], 16, 16, 90),
         new("SizeNWSE", [DoubleArrow], [], 16, 16, -45),
         new("SizeNESW", [DoubleArrow], [], 16, 16, 45),
-        new("SizeAll", ["M16,2 L20.5,7 H17.5 V14.5 H25 V11.5 L30,16 L25,20.5 V17.5 H17.5 V25 H20.5 L16,30 L11.5,25 H14.5 V17.5 H7 V20.5 L2,16 L7,11.5 V14.5 H14.5 V7 H11.5 Z"], [], 16, 16),
+        new("SizeAll", ["M16,2 L20.6,7.1 H17.6 V14.4 H24.9 V11.4 L30,16 L24.9,20.6 V17.6 H17.6 V24.9 H20.6 L16,30 L11.4,24.9 H14.4 V17.6 H7.1 V20.6 L2,16 L7.1,11.4 V14.4 H14.4 V7.1 H11.4 Z"], [], 16, 16),
         new("No", [], ["M16,6.5 A9.5,9.5 0 1 1 15.99,6.5 Z M9.3,9.3 L22.7,22.7"], 16, 16),
         new("UpArrow", ["M16,3 L24,13 H19 V28 H13 V13 H8 Z"], [], 16, 3),
-        new("Help", [Arrow], ["M21,8 A3,3 0 1 1 25.2,10.6 C24.3,11.1 24,11.7 24,12.8 M24,16 H24.05"], 3, 2),
+        new("Help", [Arrow], ["M21.2,8.2 A3,3 0 1 1 25.4,10.8 C24.5,11.3 24.2,11.9 24.2,13 M24.2,16.1 H24.25"], 4.5, 2.6),
+        new("NWPen", ["M21.5,4.5 L27.5,10.5 L12.5,25.5 L5,27 L6.5,19.5 Z"], [], 5, 27),
     ];
+
+    static string File_(Shape s) => Path.Combine(Dir, s.Name + (s.Spins ? ".ani" : ".cur"));
 
     public static void Apply()
     {
@@ -127,14 +132,19 @@ public static class NorrskenCursors
         {
             if (!App.Settings.CustomCursors) { Restore(); return; }
             Directory.CreateDirectory(Dir);
-            string stamp = Path.Combine(Dir, $"v{Version}");
+            string style = Style();
+            string stamp = Path.Combine(Dir, $"v{Version}-{style}");
+            bool fresh = false;
             if (!File.Exists(stamp))
             {
-                foreach (var s in Shapes) Write(Path.Combine(Dir, s.Name + ".cur"), s);
+                foreach (var old in Directory.EnumerateFiles(Dir, "v*")) File.Delete(old);
+                foreach (var s in Shapes) Write(File_(s), s);
                 File.WriteAllText(stamp, "");
+                fresh = true;
             }
             using var key = Registry.CurrentUser.CreateSubKey(Key);
-            if ((key.GetValue("") as string) == "Norrsken" && key.GetValue("Arrow") is string a && a.StartsWith(Dir, StringComparison.OrdinalIgnoreCase)) return;
+            if (!fresh && (key.GetValue("") as string) == "Norrsken" && key.GetValue("Arrow") is string a && a.StartsWith(Dir, StringComparison.OrdinalIgnoreCase)
+                && key.GetValue("Wait") is string w && w.EndsWith(".ani", StringComparison.OrdinalIgnoreCase)) return;
             if (!File.Exists(Backup))
             {
                 var before = key.GetValueNames().ToDictionary(n => n, n => key.GetValue(n, "", RegistryValueOptions.DoNotExpandEnvironmentNames)?.ToString() ?? "");
@@ -142,9 +152,9 @@ public static class NorrskenCursors
                 File.WriteAllText(Backup, JsonSerializer.Serialize(before));
             }
             key.SetValue("", "Norrsken");
-            foreach (var s in Shapes) key.SetValue(s.Name, Path.Combine(Dir, s.Name + ".cur"), RegistryValueKind.ExpandString);
+            foreach (var s in Shapes) key.SetValue(s.Name, File_(s), RegistryValueKind.ExpandString);
             SystemParametersInfoW(SPI_SETCURSORS, 0, IntPtr.Zero, 0x01 | 0x02);
-            Log.Write("Norrsken cursors applied");
+            Log.Write($"Norrsken cursors applied ({style})");
         }
         catch (Exception ex) { Log.Write("Cursors not applied: " + ex.Message); }
     }
@@ -164,61 +174,94 @@ public static class NorrskenCursors
         catch (Exception ex) { Log.Write("Cursors not restored: " + ex.Message); }
     }
 
-    /// <summary>Test/preview: one cursor drawn at a size.</summary>
-    internal static BitmapSource Render(string name, int size) => Draw(Shapes.First(s => s.Name == name), size);
-
-    static BitmapSource Draw(Shape s, int size)
+    static string Style()
     {
-        var dv = new DrawingVisual();
-        using (var dc = dv.RenderOpen())
+        string s = App.Settings.CursorStyle;
+        return s == "accent" && Theme.AccentColor() is { } c ? $"accent{c.R:X2}{c.G:X2}{c.B:X2}" : s is "light" ? "light" : "dark";
+    }
+
+    /// <summary>Fill (top, bottom), rim, and the stroke colour for line pointers.</summary>
+    static (Color Top, Color Bottom, Color Rim) Palette()
+    {
+        if (App.Settings.CursorStyle == "light") return (Colors.White, Color.FromRgb(232, 232, 236), Color.FromRgb(22, 22, 24));
+        if (App.Settings.CursorStyle == "accent" && Theme.AccentColor() is { } a)
+            return (Color.FromRgb((byte)Math.Min(255, a.R + 28), (byte)Math.Min(255, a.G + 28), (byte)Math.Min(255, a.B + 28)), a, Colors.White);
+        return (Color.FromRgb(46, 46, 50), Color.FromRgb(14, 14, 16), Colors.White);
+    }
+
+    /// <summary>Test/preview: one cursor drawn at a size.</summary>
+    internal static BitmapSource Render(string name, int size, double spin = 0) => Draw(Shapes.First(s => s.Name == name), size, spin);
+    internal static IEnumerable<string> Names => Shapes.Select(s => s.Name);
+
+    static BitmapSource Draw(Shape s, int size, double spin)
+    {
+        var (top, bottom, rimColor) = Palette();
+        Brush Frozen(Brush b) { b.Freeze(); return b; }
+        var fill = Frozen(new LinearGradientBrush(top, bottom, 90));
+        var rim = new Pen(Frozen(new SolidColorBrush(rimColor)), 1.7) { LineJoin = PenLineJoin.Round, StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+        var ink = Frozen(new SolidColorBrush(bottom));
+        double k = size / 32.0;
+
+        // The shape on its own, so the shadow can be drawn from exactly the same outline.
+        void Shapes_(DrawingContext dc, bool shadow)
         {
-            dc.PushTransform(new ScaleTransform(size / 32.0, size / 32.0));
+            dc.PushTransform(new ScaleTransform(k, k));
             if (s.Rotate != 0) dc.PushTransform(new RotateTransform(s.Rotate, 16, 16));
-            var rim = new Pen(Brushes.White, 1.8) { LineJoin = PenLineJoin.Round };
-            var shadow = new SolidColorBrush(Color.FromArgb(60, 0, 0, 0));
+            var shadowBrush = Frozen(new SolidColorBrush(Color.FromArgb(150, 0, 0, 0)));
             foreach (var f in s.Fill)
             {
                 var g = Geometry.Parse(f);
-                dc.PushTransform(new TranslateTransform(0.6, 1));
-                dc.DrawGeometry(shadow, new Pen(shadow, 2.4) { LineJoin = PenLineJoin.Round }, g);
-                dc.Pop();
-                dc.DrawGeometry(Brushes.Black, rim, g);
+                if (shadow) dc.DrawGeometry(shadowBrush, new Pen(shadowBrush, 2.2) { LineJoin = PenLineJoin.Round }, g);
+                else dc.DrawGeometry(fill, rim, g);
             }
             foreach (var st in s.Strokes)
             {
                 var g = Geometry.Parse(st);
-                var outer = new Pen(Brushes.White, 4.4) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round };
-                var inner = new Pen(Brushes.Black, 2) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round };
-                if (s.Name == "Wait" || s.Name == "AppStarting") { outer.Thickness = 5.4; inner.Thickness = 3; }
+                var outer = new Pen(shadow ? shadowBrush : Frozen(new SolidColorBrush(rimColor)), 4.4) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round };
                 dc.DrawGeometry(null, outer, g);
-                dc.DrawGeometry(null, inner, g);
-                if (s.Name is "Wait" or "AppStarting")
+                if (!shadow) dc.DrawGeometry(null, new Pen(ink, 2) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round }, g);
+            }
+            if (s.Spins)
+            {
+                // A ring with a bright sweep that turns (one frame per angle in the animated cursor).
+                double cx = s.Name == "Wait" ? 16 : 23.5, cy = s.Name == "Wait" ? 16 : 22.5, r = s.Name == "Wait" ? 9 : 4.6, w = s.Name == "Wait" ? 3.4 : 2.4;
+                var ring = new EllipseGeometry(new Point(cx, cy), r, r);
+                dc.DrawGeometry(null, new Pen(shadow ? shadowBrush : Frozen(new SolidColorBrush(rimColor)), w + 2.4), ring);
+                if (!shadow)
                 {
-                    // A lighter quarter on the ring reads as "working".
-                    var c = g.Bounds;
-                    double cx = (c.Left + c.Right) / 2, cy = (c.Top + c.Bottom) / 2, r = c.Width / 2;
-                    var arc = Geometry.Parse(FormattableString.Invariant($"M{cx},{cy - r} A{r},{r} 0 0 1 {cx + r},{cy}"));
-                    dc.DrawGeometry(null, new Pen(new SolidColorBrush(Color.FromRgb(150, 150, 150)), 3) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round }, arc);
+                    dc.DrawGeometry(null, new Pen(Frozen(new SolidColorBrush(Color.FromArgb(90, bottom.R, bottom.G, bottom.B))), w), ring);
+                    double a0 = spin * Math.PI / 180, a1 = a0 + Math.PI * 0.75;
+                    var arc = new PathGeometry([new PathFigure(new Point(cx + r * Math.Cos(a0), cy + r * Math.Sin(a0)),
+                        [new ArcSegment(new Point(cx + r * Math.Cos(a1), cy + r * Math.Sin(a1)), new Size(r, r), 0, false, SweepDirection.Clockwise, true)], false)]);
+                    dc.DrawGeometry(null, new Pen(ink, w) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round }, arc);
                 }
             }
             if (s.Rotate != 0) dc.Pop();
             dc.Pop();
         }
+
+        // A real, soft shadow: the same shape, blurred and nudged down a little.
+        var shadowVisual = new DrawingVisual { Effect = new System.Windows.Media.Effects.BlurEffect { Radius = 2.4 * k, KernelType = System.Windows.Media.Effects.KernelType.Gaussian }, Opacity = 0.5 };
+        using (var dc = shadowVisual.RenderOpen()) { dc.PushTransform(new TranslateTransform(0.5 * k, 1.3 * k)); Shapes_(dc, true); dc.Pop(); }
+        var shape = new DrawingVisual();
+        using (var dc = shape.RenderOpen()) Shapes_(dc, false);
         var rtb = new RenderTargetBitmap(size, size, 96, 96, PixelFormats.Pbgra32);
-        rtb.Render(dv);
+        rtb.Render(shadowVisual);
+        rtb.Render(shape);
         var straight = new FormatConvertedBitmap(rtb, PixelFormats.Bgra32, null, 0);
         straight.Freeze();
         return straight;
     }
 
-    /// <summary>A multi-size .cur with 32-bit DIB frames (hotspots scaled per size).</summary>
-    static void Write(string path, Shape s)
+    static readonly int[] Sizes = [32, 48, 64, 80, 96, 128];
+
+    /// <summary>A multi-size .cur (32-bit frames, hotspot scaled per size).</summary>
+    static byte[] Cur(Shape s, double spin)
     {
-        int[] sizes = [32, 48, 64];
         var frames = new List<byte[]>();
-        foreach (int size in sizes)
+        foreach (int size in Sizes)
         {
-            var bmp = Draw(s, size);
+            var bmp = Draw(s, size, spin);
             var px = new byte[size * size * 4];
             bmp.CopyPixels(px, size * 4, 0);
             using var ms = new MemoryStream();
@@ -231,22 +274,43 @@ public static class NorrskenCursors
             w.Flush();
             frames.Add(ms.ToArray());
         }
-        using var fs = File.Create(path);
-        using var o = new BinaryWriter(fs);
-        o.Write((short)0); o.Write((short)2); o.Write((short)sizes.Length);
-        int offset = 6 + 16 * sizes.Length;
-        for (int i = 0; i < sizes.Length; i++)
+        using var file = new MemoryStream();
+        using var o = new BinaryWriter(file);
+        o.Write((short)0); o.Write((short)2); o.Write((short)Sizes.Length);
+        int offset = 6 + 16 * Sizes.Length;
+        for (int i = 0; i < Sizes.Length; i++)
         {
-            int size = sizes[i];
-            o.Write((byte)size); o.Write((byte)size); o.Write((byte)0); o.Write((byte)0);
+            int size = Sizes[i];
+            o.Write((byte)(size >= 256 ? 0 : size)); o.Write((byte)(size >= 256 ? 0 : size)); o.Write((byte)0); o.Write((byte)0);
             o.Write((short)Math.Round(s.HotX * size / 32)); o.Write((short)Math.Round(s.HotY * size / 32));
             o.Write(frames[i].Length); o.Write(offset);
             offset += frames[i].Length;
         }
         foreach (var f in frames) o.Write(f);
+        o.Flush();
+        return file.ToArray();
+    }
+
+    /// <summary>Writes a .cur, or for spinning pointers an animated .ani (RIFF "ACON", 12 frames, ~0.8 s a turn).</summary>
+    static void Write(string path, Shape s)
+    {
+        if (!s.Spins) { File.WriteAllBytes(path, Cur(s, 0)); return; }
+        const int frames = 12, jiffies = 4; // 1 jiffy = 1/60 s
+        var icons = Enumerable.Range(0, frames).Select(i => Cur(s, i * 360.0 / frames)).ToList();
+        using var fs = File.Create(path);
+        using var w = new BinaryWriter(fs);
+        int list = 4 + icons.Sum(c => 8 + c.Length + (c.Length & 1));
+        w.Write("RIFF"u8.ToArray()); w.Write(4 + (8 + 36) + (8 + list)); w.Write("ACON"u8.ToArray());
+        w.Write("anih"u8.ToArray()); w.Write(36);
+        w.Write(36); w.Write(frames); w.Write(frames); w.Write(0); w.Write(0); w.Write(0); w.Write(0); w.Write(jiffies); w.Write(1 /* AF_ICON */);
+        w.Write("LIST"u8.ToArray()); w.Write(list); w.Write("fram"u8.ToArray());
+        foreach (var c in icons)
+        {
+            w.Write("icon"u8.ToArray()); w.Write(c.Length); w.Write(c);
+            if ((c.Length & 1) == 1) w.Write((byte)0);
+        }
     }
 }
-
 /// <summary>
 /// Norrsken OS, once per account: the Windows apps Norrsken replaces step aside. Notepad and
 /// Snipping Tool are removed for this account (both reinstallable from the Microsoft Store);

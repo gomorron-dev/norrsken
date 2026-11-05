@@ -2,6 +2,11 @@
 
 Installed copies update themselves to the newest version (see [Updates](README.md#updates)).
 
+## 0.4.3
+
+- New Win+Tab: a full-screen overview of every open window with big live previews. Click one to switch, or use the arrows and Enter. Win+Tab again, Esc or a click on the empty space closes it.
+- Alt+Tab now shows up even when only one window is open (it didn't before, and that also confused Win+Tab).
+- New mouse pointers: rounded shapes, a soft shadow, and sharp at any display scaling (six sizes, up to 128 px). The busy pointers actually spin now, and you can pick dark, light or your accent colour under Settings › Customise.
 ## 0.4.2
 
 Fixed:

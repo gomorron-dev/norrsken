@@ -11,7 +11,7 @@
     <RootNamespace>Norrsken.Shell</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\norrsken.ico</ApplicationIcon>
-    <Version>0.4.2</Version>
+    <Version>0.4.3</Version>
     <Product>Norrsken</Product>
     <Company>Norrsken Project</Company>
   </PropertyGroup>

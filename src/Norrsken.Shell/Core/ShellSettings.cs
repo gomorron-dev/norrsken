@@ -35,6 +35,8 @@ public sealed class ShellSettings
     // ── Look: accent, shape, dock ──
     /// <summary>Accent colour for on/selected states: "" keeps Norrsken monochrome; an id from Theme.Accents or "#RRGGBB".</summary>
     public string Accent { get; set; } = "";
+    /// <summary>Pointer style: "dark", "light" or "accent".</summary>
+    public string CursorStyle { get; set; } = "dark";
     /// <summary>Corner roundness: 0 square, 0.5 subtle, 1 Norrsken, 1.5 extra round.</summary>
     public double CornerScale { get; set; } = 1.0;
     /// <summary>Dock size: 0.8 compact … 1.4 large (icons, pill and clock together).</summary>

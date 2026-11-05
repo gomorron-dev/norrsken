@@ -24,7 +24,9 @@ public sealed class AltTab : Window
     readonly WrapPanel _cards = new() { HorizontalAlignment = HorizontalAlignment.Center };
     readonly List<(Border Card, Border Thumb, IntPtr Handle)> _slots = new();
     readonly List<IntPtr> _thumbs = new();
-    const double ThumbW = 220, ThumbH = 138;
+    static bool _overview;
+    static double ThumbW => _overview ? 340 : 220;
+    static double ThumbH => _overview ? 212 : 138;
 
     public static void Start()
     {
@@ -59,6 +61,7 @@ public sealed class AltTab : Window
         _order = App.Tracker.Windows.OrderByDescending(w => w.IsActive).ThenByDescending(w => w.LastActivated).ToList();
         if (_order.Count == 0) return;
         _active = true;
+        _overview = true;
         _index = 0;
         KeyboardHook.OverviewOpen = true;
         _current = new AltTab();
@@ -74,8 +77,10 @@ public sealed class AltTab : Window
         if (_order.Count == 0) return;
         _active = true;
         _index = _order.Count > 1 ? (dir > 0 ? 1 : _order.Count - 1) : 0;
-        // Straight away, every time (it used to wait 110 ms, so a quick Alt+Tab never showed it).
-        if (_order.Count > 1) { _current = new AltTab(); _current.Show(); }
+        // Straight away, every time, even with a single window open.
+        _overview = false;
+        _current = new AltTab();
+        _current.Show();
     }
 
     internal static void Step(int dir)
@@ -98,6 +103,7 @@ public sealed class AltTab : Window
     static void End()
     {
         _active = false;
+        _overview = false;
         KeyboardHook.OverviewOpen = false;
         Delay.Stop();
         _current?.Close();
@@ -132,8 +138,31 @@ public sealed class AltTab : Window
             _cards.Children.Add(card);
             _slots.Add((card, thumb, w.IsMinimized ? IntPtr.Zero : w.Handle));
         }
-        var root = new Border { Padding = new Thickness(14), Child = _cards, BorderThickness = new Thickness(1) };
-        root.SetResourceReference(Border.BorderBrushProperty, "DockLine");
+        Border root;
+        if (_overview)
+        {
+            // Win+Tab: every window, big, across the whole screen. Click the empty space (or Esc, or Win+Tab) to leave.
+            SizeToContent = SizeToContent.Manual;
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Left = work.Left; Top = work.Top; Width = work.Width; Height = work.Height;
+            _cards.MaxWidth = work.Width - 160;
+            var page = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            var title = new TextBlock { Text = "Windows", FontSize = 30, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, FontFamily = (FontFamily)Application.Current.FindResource("DisplayFont") };
+            title.SetResourceReference(TextBlock.ForegroundProperty, "Text");
+            var hint = new TextBlock { Text = $"{_order.Count} open  ·  click one, or use the arrows and Enter  ·  Esc closes", FontSize = 13, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 6, 0, 28) };
+            hint.SetResourceReference(TextBlock.ForegroundProperty, "TextDim");
+            page.Children.Add(title);
+            page.Children.Add(hint);
+            page.Children.Add(_cards);
+            root = new Border { Child = page, Background = Brushes.Transparent };
+            root.MouseLeftButtonUp += (_, e) => { if (e.OriginalSource == root || e.OriginalSource == page) Cancel(); };
+            Motion.Stagger(_cards.Children.Cast<UIElement>(), stepMs: 30, max: 12, rise: 14, startMs: 60);
+        }
+        else
+        {
+            root = new Border { Padding = new Thickness(14), Child = _cards, BorderThickness = new Thickness(1) };
+            root.SetResourceReference(Border.BorderBrushProperty, "DockLine");
+        }
         Content = root;
         Highlight();
         Loaded += (_, _) =>

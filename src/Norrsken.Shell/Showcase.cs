@@ -73,6 +73,18 @@ public static class Showcase
         Do("hero-light.png", () => Hero(paper), 1600, 1000);
         Theme.Apply("graphite");
         WriteIcon(Path.Combine(dir, "norrsken.ico"));
+        // Pointer sheet (not used in the README; for checking the pointers at a glance)
+        foreach (var style in new[] { "dark", "light" })
+        {
+            string was = App.Settings.CursorStyle;
+            App.Settings.CursorStyle = style;
+            var sheet = new WrapPanel { Width = 1000, Background = new SolidColorBrush(style == "dark" ? Color.FromRgb(236, 236, 240) : Color.FromRgb(36, 36, 40)) };
+            foreach (var name in NorrskenCursors.Names)
+                sheet.Children.Add(new Image { Source = NorrskenCursors.Render(name, 96, 40), Width = 96, Height = 96, Margin = new Thickness(12) });
+            App.Settings.CursorStyle = was;
+            sheet.Measure(new Size(1000, double.PositiveInfinity));
+            Save(sheet, 1000, Math.Ceiling(sheet.DesiredSize.Height), Path.Combine(dir, $"cursors-{style}.png"));
+        }
         Log.Write($"Showcase: {ok} pictures in {dir}");
         return ok >= 9 ? 0 : 1;
     }
