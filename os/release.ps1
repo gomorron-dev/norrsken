@@ -24,8 +24,9 @@ $csproj = Join-Path $PSScriptRoot '..\src\Norrsken.Shell\Norrsken.Shell.csproj'
 $version = ([regex]::Match([IO.File]::ReadAllText($csproj), '<Version>([^<]+)</Version>')).Groups[1].Value
 if (-not $version) { throw "No <Version> in $csproj" }
 $tag = "v$version"
-gh release view $tag --repo $repo *> $null
-if ($LASTEXITCODE -eq 0) { throw "Release $tag already exists. Bump <Version> in Norrsken.Shell.csproj first." }
+# Windows PowerShell turns gh's "release not found" on stderr into an error under Stop: ask with errors off.
+$ErrorActionPreference = 'Continue'; gh release view $tag --repo $repo 2>&1 | Out-Null; $exists = $LASTEXITCODE -eq 0; $ErrorActionPreference = 'Stop'
+if ($exists) { throw "Release $tag already exists. Bump <Version> in Norrsken.Shell.csproj first." }
 
 if (-not $SkipBuild) { & (Join-Path $PSScriptRoot 'publish.ps1') }
 $payload = Join-Path $PSScriptRoot 'payload\Norrsken'
