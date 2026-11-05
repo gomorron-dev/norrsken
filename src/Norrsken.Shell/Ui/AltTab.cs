@@ -74,7 +74,8 @@ public sealed class AltTab : Window
         if (_order.Count == 0) return;
         _active = true;
         _index = _order.Count > 1 ? (dir > 0 ? 1 : _order.Count - 1) : 0;
-        Delay.Start();
+        // Straight away, every time (it used to wait 110 ms, so a quick Alt+Tab never showed it).
+        if (_order.Count > 1) { _current = new AltTab(); _current.Show(); }
     }
 
     internal static void Step(int dir)
@@ -151,7 +152,20 @@ public sealed class AltTab : Window
         // Never take focus from the window you're switching away from.
         long ex = Native.GetWindowLongPtr(hwnd, Native.GWL_EXSTYLE).ToInt64();
         Native.SetWindowLongPtr(hwnd, Native.GWL_EXSTYLE, new IntPtr(ex | Native.WS_EX_NOACTIVATE | Native.WS_EX_TOOLWINDOW));
+        StayOnTop(hwnd);
+        // Other always-on-top windows (the dock, overlays, other apps) may come up after it: keep pushing it back over them.
+        _onTop = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(120) };
+        _onTop.Tick += (_, _) => StayOnTop(hwnd);
+        _onTop.Start();
+        Closed += (_, _) => _onTop.Stop();
     }
+
+    DispatcherTimer? _onTop;
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint flags);
+
+    /// <summary>To the very top of the always-on-top layer, without taking focus.</summary>
+    static void StayOnTop(IntPtr hwnd) => SetWindowPos(hwnd, new IntPtr(-1) /* HWND_TOPMOST */, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010 | 0x0040 /* NOSIZE NOMOVE NOACTIVATE SHOWWINDOW */);
 
     void Highlight()
     {

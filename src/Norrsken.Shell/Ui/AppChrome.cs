@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
@@ -25,6 +25,8 @@ public static class AppChrome
         var parts = new Parts { Scale = scale, Shift = shift, Root = root };
         Windows[w] = parts;
         w.Closed += (_, _) => Windows.Remove(w);
+        // A Norrsken app opens in front, with focus (Windows would often leave it behind the window you were in).
+        if (!App.TestMode) w.ContentRendered += (_, _) => Interop.Native.ForceForeground(new WindowInteropHelper(w).Handle);
 
         w.SourceInitialized += (_, _) =>
         {

@@ -509,7 +509,7 @@ public partial class LauncherWindow : Window
             Extra(App.Pinned.Contains(app) ? "Remove from dock" : "Keep in dock", () => App.TogglePin(app));
             if (app.TargetPath is { } exe && exe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && File.Exists(exe))
             {
-                Extra("Run as administrator", () => { if (!App.TestMode) try { Process.Start(new ProcessStartInfo(exe) { UseShellExecute = true, Verb = "runas" }); } catch (Exception) { } });
+                Extra("Run as administrator", () => Unelevated.StartAdmin(exe));
                 Extra("Show in Files", () => NorrskenApps.Launch("files", exe));
             }
         }

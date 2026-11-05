@@ -191,7 +191,7 @@ public partial class SettingsWindow
     static void OpenUri(string uri)
     {
         if (App.TestMode) { App.TestLaunches.Add(uri); return; }
-        try { Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true }); }
+        try { Unelevated.Start(uri); }
         catch (Exception ex) { Log.Write($"{uri}: {ex.Message}"); }
     }
 
@@ -1091,6 +1091,8 @@ public static class InstalledApps
             if (cmd.StartsWith('"')) { int end = cmd.IndexOf('"', 1); exe = cmd[1..end]; args = cmd[(end + 1)..].Trim(); }
             else if (cmd.StartsWith("MsiExec", StringComparison.OrdinalIgnoreCase)) { exe = "msiexec.exe"; args = cmd[cmd.IndexOf(' ')..].Trim().Replace("/I{", "/X{", StringComparison.OrdinalIgnoreCase); }
             else { int sp = cmd.IndexOf(".exe", StringComparison.OrdinalIgnoreCase); exe = sp > 0 ? cmd[..(sp + 4)] : cmd; args = sp > 0 ? cmd[(sp + 4)..].Trim() : ""; }
+            Interop.Native.AllowAnyForeground();
+            WindowTracker.ExpectNewWindow(); // uninstallers often need admin, so this one stays elevated, but comes to the front
             Process.Start(new ProcessStartInfo(exe, args) { UseShellExecute = true });
         }
         catch (Exception ex) { Log.Write($"Uninstall {e.Name} failed: {ex.Message}"); MessageBox.Show($"{e.Name} couldn't start its uninstaller.\n\n{ex.Message}", "Settings"); }

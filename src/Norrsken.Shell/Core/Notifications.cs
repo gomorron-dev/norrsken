@@ -120,7 +120,7 @@ public static class Notifications
         if (App.TestMode) { App.TestLaunches.Add("notification:" + item.AppName); return; }
         if (item.AppId.Length > 0)
         {
-            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(@"shell:AppsFolder\" + item.AppId) { UseShellExecute = true }); }
+            try { Unelevated.Start(@"shell:AppsFolder\" + item.AppId); }
             catch (Exception ex) { Log.Write("Open from notification failed: " + ex.Message); }
         }
         Dismiss(item);

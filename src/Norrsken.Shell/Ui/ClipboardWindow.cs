@@ -120,7 +120,7 @@ public sealed class ClipboardWindow : CardWindow
         // Back to the app you were in, then paste (the Ctrl+V you'd have pressed yourself).
         Dispatcher.BeginInvoke(async () =>
         {
-            if (_target != IntPtr.Zero) SetForegroundWindow(_target);
+            if (_target != IntPtr.Zero) Interop.Native.ForceForeground(_target);
             await Task.Delay(120);
             keybd_event(0x11, 0, 0, IntPtr.Zero);
             keybd_event(0x56, 0, 0, IntPtr.Zero);

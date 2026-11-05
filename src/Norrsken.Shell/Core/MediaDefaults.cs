@@ -45,6 +45,11 @@ public static class MediaDefaults
     ];
     static readonly string[] Gif = ["gif"];
     static readonly string[] Playlist = ["m3u", "m3u8", "pls", "xspf", "wpl"];
+    static HashSet<string>? _media;
+
+    /// <summary>Photo, video, music, GIF and playlist extensions (without the dot) that Flickerbox opens.</summary>
+    public static bool IsMedia(string ext) => (_media ??= MediaMap().Select(m => m.Ext).ToHashSet(StringComparer.OrdinalIgnoreCase)).Contains(ext.TrimStart('.'));
+
     public static readonly string[] Text = ["txt", "log", "md", "ini", "cfg", "csv", "json", "xml", "yml", "yaml", "toml", "nfo", "conf"];
 
     const string App = "Flickerbox";

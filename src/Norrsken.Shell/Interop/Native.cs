@@ -146,4 +146,56 @@ internal static class Native
         int pref = DWMWCP_ROUND;
         DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref pref, sizeof(int));
     }
-}
+
+    // ───────────────────────── bringing a window to the front ─────────────────────────
+
+    [DllImport("user32.dll")] static extern bool AllowSetForegroundWindow(int pid);
+    [DllImport("user32.dll")] static extern bool AttachThreadInput(uint attach, uint to, bool on);
+    [DllImport("user32.dll")] static extern bool BringWindowToTop(IntPtr h);
+    [DllImport("user32.dll")] static extern IntPtr SetFocus(IntPtr h);
+    [DllImport("kernel32.dll")] static extern uint GetCurrentThreadId();
+    [DllImport("user32.dll")] static extern uint SendInput(uint n, NudgeInput[] inputs, int size);
+    [StructLayout(LayoutKind.Sequential)] struct NudgeKey { public ushort Vk, Scan; public uint Flags, Time; public IntPtr Extra; }
+    [StructLayout(LayoutKind.Explicit, Size = 40)] struct NudgeInput { [FieldOffset(0)] public uint Type; [FieldOffset(8)] public NudgeKey Key; }
+
+    /// <summary>Lets whatever starts next take the foreground (call right after the user's click or key).</summary>
+    public static void AllowAnyForeground() => AllowSetForegroundWindow(-1 /* ASFW_ANY */);
+
+    /// <summary>
+    /// Brings a window to the front and gives it focus, even though Windows normally refuses that to a process
+    /// that isn't in front (the dock never takes focus). Tries, in order: plainly; after a harmless key nudge
+    /// (makes Norrsken "the last input"); and with its input attached to the window that's in front now.
+    /// </summary>
+    public static bool ForceForeground(IntPtr h)
+    {
+        if (h == IntPtr.Zero) return false;
+        if (IsIconic(h)) ShowWindow(h, 9 /* SW_RESTORE */);
+        AllowSetForegroundWindow(-1);
+        if (SetForegroundWindow(h) && GetForegroundWindow() == h) return true;
+
+        // An unassigned key (0xE8) down and up: nothing reacts to it, but it counts as Norrsken's input.
+        var nudge = new NudgeInput[2];
+        nudge[0].Type = nudge[1].Type = 1;
+        nudge[0].Key.Vk = nudge[1].Key.Vk = 0xE8;
+        nudge[1].Key.Flags = 2;
+        SendInput(2, nudge, Marshal.SizeOf<NudgeInput>());
+        if (SetForegroundWindow(h) && GetForegroundWindow() == h) return true;
+
+        uint me = GetCurrentThreadId();
+        uint front = GetWindowThreadProcessId(GetForegroundWindow(), out _);
+        uint target = GetWindowThreadProcessId(h, out _);
+        bool a = front != 0 && front != me && AttachThreadInput(me, front, true);
+        bool b = target != 0 && target != me && target != front && AttachThreadInput(me, target, true);
+        try
+        {
+            BringWindowToTop(h);
+            SetForegroundWindow(h);
+            SetFocus(h);
+        }
+        finally
+        {
+            if (a) AttachThreadInput(me, front, false);
+            if (b) AttachThreadInput(me, target, false);
+        }
+        return GetForegroundWindow() == h;
+    }}

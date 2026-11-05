@@ -161,6 +161,19 @@ public static class Files
     public static void Open(string path, string? args = null)
     {
         if (App.TestMode) { App.TestLaunches.Add("open:" + path); return; }
+        string ext = Path.GetExtension(path).TrimStart('.');
+        // Media and text open straight in Flickerbox and Notes. Going through Windows' file associations can
+        // stop at its "choose an app" picker until the default-apps policy has settled in.
+        if (args == null && File.Exists(path) && MediaDefaults.IsMedia(ext) && File.Exists(MediaDefaults.Exe))
+        {
+            Unelevated.Start(MediaDefaults.Exe, $"\"{path}\"", Path.GetDirectoryName(path));
+            return;
+        }
+        if (args == null && File.Exists(path) && MediaDefaults.Text.Contains(ext, StringComparer.OrdinalIgnoreCase))
+        {
+            NorrskenApps.Launch("notes", path);
+            return;
+        }
         Unelevated.Start(path, args ?? "", Path.GetDirectoryName(path));
     }
 

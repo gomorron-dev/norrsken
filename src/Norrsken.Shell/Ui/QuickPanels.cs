@@ -236,7 +236,7 @@ public sealed class RunWindow : CardWindow
         else file = expanded;
         try
         {
-            if (admin) Process.Start(new ProcessStartInfo(file, args) { UseShellExecute = true, Verb = "runas" });
+            if (admin) Unelevated.StartAdmin(file, args);
             else Unelevated.Start(file, args);
             return null;
         }

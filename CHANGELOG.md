@@ -2,6 +2,13 @@
 
 Installed copies update themselves to the newest version (see [Updates](README.md#updates)).
 
+## 0.4.2
+
+Fixed:
+- Opening a photo, video or song from Files could get stuck on Windows' "choose an app" box, which showed up blank and couldn't be clicked. Files now opens media straight in Flickerbox and text files in Notes, and nothing Norrsken opens runs as administrator by accident anymore (that's what broke the box).
+- Apps opened from the dock, the launcher, Files, notifications or links often appeared behind the window you were in. They now open in front, with focus. The same goes for Norrsken's own windows and anything you switch to from the dock or Alt+Tab.
+- Alt+Tab didn't always show up. It now appears instantly every time, and stays on top of everything else while it's open.
+- Task Manager in the dock's menu opened Windows' version, and "Open in Terminal" in Files opened Windows Terminal. Both open Norrsken's now.
 ## 0.4.1
 
 - Updates work like they do in proper software now. Norrsken downloads a new version in the background, checks it, and then asks if you want to restart to install it. Say later and it installs the next time you sign in.

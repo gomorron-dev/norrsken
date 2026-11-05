@@ -1158,7 +1158,7 @@ public partial class DockWindow : Window
             m.Items.Add(MenuTitle("Norrsken"));
             m.Items.Add(new Separator());
             m.Items.Add(MenuEntry("Settings", OpenSettings));
-            m.Items.Add(MenuEntry("Task Manager", () => Process.Start(new ProcessStartInfo("taskmgr.exe") { UseShellExecute = true })));
+            m.Items.Add(MenuEntry("Task Manager", () => NorrskenApps.Launch("taskmgr")));
             m.Items.Add(new Separator());
             m.Items.Add(MenuEntry("Quit Norrsken", App.Quit));
             m.IsOpen = true;
@@ -1323,7 +1323,7 @@ public partial class DockWindow : Window
         if (App.TestMode) { App.TestLaunches.Add(uris[0]); return; }
         foreach (var uri in uris)
         {
-            try { Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true }); return; }
+            try { Unelevated.Start(uri); return; }
             catch (Exception ex) { Log.Write($"{uri} failed: {ex.Message}"); }
         }
     }

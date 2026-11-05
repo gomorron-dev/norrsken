@@ -60,12 +60,75 @@ public static class Unelevated
     public static void Start(string file, string args = "", string? workingDir = null)
     {
         if (App.TestMode) { App.TestLaunches.Add("start:" + file + (args.Length > 0 ? " " + args : "")); return; }
+        // Whatever opens may come to the front, and its first window gets focus when it appears.
+        Interop.Native.AllowAnyForeground();
+        WindowTracker.ExpectNewWindow();
         if (IsElevated)
         {
             try { ViaShell(file, args, workingDir ?? ""); return; }
-            catch (Exception ex) { Log.Write($"Unelevated start failed ({ex.Message}); starting {file} normally"); }
+            catch (Exception ex) { Log.Write($"Unelevated start via the desktop failed ({ex.Message})"); }
+            // Second route: start it with Explorer's own (non-admin) rights. Running it as administrator would
+            // break things like Windows' "choose an app" picker, which shows up blank and ignores clicks.
+            try { if (ViaExplorerToken(file, args, workingDir)) return; }
+            catch (Exception ex) { Log.Write($"Unelevated start via Explorer's token failed ({ex.Message}); starting {file} normally"); }
         }
         Process.Start(new ProcessStartInfo(file, args) { UseShellExecute = true, WorkingDirectory = workingDir ?? "" });
+    }
+
+    /// <summary>"Run as administrator": elevated on purpose, and still brought to the front when it opens.</summary>
+    public static void StartAdmin(string file, string args = "")
+    {
+        if (App.TestMode) { App.TestLaunches.Add("admin:" + file + (args.Length > 0 ? " " + args : "")); return; }
+        Interop.Native.AllowAnyForeground();
+        WindowTracker.ExpectNewWindow();
+        try { Process.Start(new ProcessStartInfo(file, args) { UseShellExecute = true, Verb = "runas" }); }
+        catch (System.ComponentModel.Win32Exception) { } // the admin prompt was declined
+    }
+
+    [DllImport("user32.dll")] static extern IntPtr GetShellWindow();
+    [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
+    [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr OpenProcess(uint access, bool inherit, uint pid);
+    [DllImport("advapi32.dll", SetLastError = true)] static extern bool OpenProcessToken(IntPtr process, uint access, out IntPtr token);
+    [DllImport("advapi32.dll", SetLastError = true)] static extern bool DuplicateTokenEx(IntPtr token, uint access, IntPtr attrs, int level, int type, out IntPtr dup);
+    [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    static extern bool CreateProcessWithTokenW(IntPtr token, uint logon, string? app, System.Text.StringBuilder cmd, uint flags, IntPtr env, string? dir, ref StartupInfo si, out ProcessInfo pi);
+    [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    struct StartupInfo { public int cb; public string? reserved, desktop, title; public int x, y, w, h, xc, yc, fill, flags; public short show, r2; public IntPtr r3, stdin, stdout, stderr; }
+    [StructLayout(LayoutKind.Sequential)] struct ProcessInfo { public IntPtr process, thread; public int pid, tid; }
+
+    /// <summary>
+    /// Starts <paramref name="file"/> under the token of Explorer (the signed-in user, not elevated). Programs run
+    /// directly; documents, folders and links are handed to explorer.exe, which opens them with their usual app.
+    /// </summary>
+    static bool ViaExplorerToken(string file, string args, string? dir)
+    {
+        IntPtr shell = GetShellWindow();
+        uint pid = 0;
+        if (shell != IntPtr.Zero) GetWindowThreadProcessId(shell, out pid);
+        if (pid == 0) pid = (uint)(Process.GetProcessesByName("explorer").FirstOrDefault(p => p.SessionId == Process.GetCurrentProcess().SessionId)?.Id ?? 0);
+        if (pid == 0) return false;
+        IntPtr proc = OpenProcess(0x1000 /* QUERY_LIMITED_INFORMATION */, false, pid), token = IntPtr.Zero, dup = IntPtr.Zero;
+        try
+        {
+            if (proc == IntPtr.Zero || !OpenProcessToken(proc, 0x000B /* ASSIGN_PRIMARY | DUPLICATE | QUERY */, out token)) return false;
+            if (!DuplicateTokenEx(token, 0x02000000 /* MAXIMUM_ALLOWED */, IntPtr.Zero, 2 /* SecurityImpersonation */, 1 /* TokenPrimary */, out dup)) return false;
+            bool program = file.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && File.Exists(file);
+            string explorer = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
+            var cmd = new System.Text.StringBuilder(program ? $"\"{file}\" {args}" : $"\"{explorer}\" \"{file}\"");
+            var si = new StartupInfo { cb = Marshal.SizeOf<StartupInfo>(), desktop = @"winsta0\default" };
+            string? workDir = dir is { Length: > 0 } d && Directory.Exists(d) ? d : null;
+            if (!CreateProcessWithTokenW(dup, 0, null, cmd, 0x00000400 /* CREATE_UNICODE_ENVIRONMENT */, IntPtr.Zero, workDir, ref si, out var pi)) return false;
+            CloseHandle(pi.thread);
+            CloseHandle(pi.process);
+            return true;
+        }
+        finally
+        {
+            if (dup != IntPtr.Zero) CloseHandle(dup);
+            if (token != IntPtr.Zero) CloseHandle(token);
+            if (proc != IntPtr.Zero) CloseHandle(proc);
+        }
     }
 
     static void ViaShell(string file, string args, string dir)

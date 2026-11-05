@@ -1419,14 +1419,14 @@ public partial class FilesWindow : Window
     static void StartTool(string exe, string args, bool admin = false)
     {
         if (App.TestMode) { App.TestLaunches.Add(exe + " " + args); return; }
-        try { Process.Start(new ProcessStartInfo(exe, args) { UseShellExecute = true, Verb = admin ? "runas" : "" }); }
+        try { if (admin) Unelevated.StartAdmin(exe, args); else Unelevated.Start(exe, args); }
         catch (Exception ex) { Log.Write($"{exe} failed: {ex.Message}"); }
     }
 
     void OpenTerminal(string dir)
     {
         if (App.TestMode) { App.TestLaunches.Add("terminal:" + dir); return; }
-        try { Process.Start(new ProcessStartInfo("wt.exe", $"-d \"{dir}\"") { UseShellExecute = true }); }
+        try { NorrskenApps.Launch("terminal", dir); }
         catch (Exception) { StartTool("powershell.exe", $"-NoExit -Command Set-Location -LiteralPath '{dir.Replace("'", "''")}'"); }
     }
 

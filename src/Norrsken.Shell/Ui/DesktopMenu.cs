@@ -55,7 +55,7 @@ public static class DesktopMenu
                 if (System.IO.Path.GetExtension(item).ToLowerInvariant() is ".txt" or ".md" or ".log" or ".json" or ".ini" or ".cfg" or ".csv" or ".xml" or ".ps1" or ".bat" or ".cmd")
                     Item("Edit in Notes", () => NorrskenApps.Launch("notes", item));
                 if (System.IO.Path.GetExtension(item).ToLowerInvariant() is ".exe" or ".lnk" or ".bat" or ".cmd" or ".msi")
-                    Item("Run as administrator", () => Process.Start(new ProcessStartInfo(item) { UseShellExecute = true, Verb = "runas" }));
+                    Item("Run as administrator", () => Unelevated.StartAdmin(item));
             }
             Item("Show in Files", () => NorrskenApps.Launch("files", item));
             Sep();
@@ -92,7 +92,7 @@ public static class DesktopMenu
         // A menu from a background process needs the foreground, or it can't close when you click elsewhere.
         keybd_event(0x12, 0, 0, IntPtr.Zero);
         keybd_event(0x12, 0, 2, IntPtr.Zero);
-        SetForegroundWindow(hwnd);
+        Interop.Native.ForceForeground(hwnd);
         m.IsOpen = true;
     }
 

@@ -536,7 +536,7 @@ public sealed class CaptureToast : Window
     static void StartShell(string target, string? args)
     {
         if (App.TestMode) { App.TestLaunches.Add("open:" + target); return; }
-        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(target, args ?? "") { UseShellExecute = true }); }
+        try { Unelevated.Start(target, args ?? ""); }
         catch (Exception ex) { Log.Write("Open failed: " + ex.Message); }
     }
 

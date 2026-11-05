@@ -209,7 +209,7 @@ public partial class QuickSettingsWindow : Window
     {
         HidePanel();
         if (App.TestMode) { App.TestLaunches.Add(uri); return; }
-        try { Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true }); }
+        try { Unelevated.Start(uri); }
         catch (Exception ex) { Log.Write($"{uri} failed: {ex.Message}"); }
     }
 

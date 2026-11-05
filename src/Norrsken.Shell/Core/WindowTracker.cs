@@ -171,11 +171,13 @@ public sealed class WindowTracker : IDisposable
             if (!alive.Contains(Windows[i].Handle)) Windows.RemoveAt(i);
 
         var known = Windows.Select(w => w.Handle).ToHashSet();
+        IntPtr fresh = IntPtr.Zero; // the top-most window that wasn't here before
         // EnumWindows is top-down z-order; reverse so the oldest windows land first.
         for (int i = current.Count - 1; i >= 0; i--)
         {
             IntPtr h = current[i];
             if (known.Contains(h)) continue;
+            if (fresh == IntPtr.Zero || current.IndexOf(h) < current.IndexOf(fresh)) fresh = h;
             var id = WindowIdentity.Resolve(h);
             string? exe = GetProcessPath(id.ProcessId);
             var w = new TrackedWindow(h) { ExePath = exe, Aumid = id.Aumid, AppName = Describe(exe) };
@@ -185,6 +187,11 @@ public sealed class WindowTracker : IDisposable
         }
 
         foreach (var w in Windows) w.Title = Native.GetWindowText(w.Handle);
+        if (fresh != IntPtr.Zero && DateTime.UtcNow < _expectUntil && known.Count > 0)
+        {
+            _expectUntil = default;
+            if (Native.GetForegroundWindow() != fresh) Native.ForceForeground(fresh);
+        }
         UpdateStates();
     }
 
@@ -206,11 +213,16 @@ public sealed class WindowTracker : IDisposable
     }
 
     /// <summary>Bring to front without changing maximised/normal state.</summary>
-    public static void Activate(TrackedWindow w)
-    {
-        if (IsIconic(w.Handle)) ShowWindow(w.Handle, SW_RESTORE);
-        SetForegroundWindow(w.Handle);
-    }
+    public static void Activate(TrackedWindow w) => Native.ForceForeground(w.Handle);
+
+    static DateTime _expectUntil;
+
+    /// <summary>
+    /// Something was just opened from Norrsken (an app, a file, a link): the first new window in the next ten
+    /// seconds comes to the front with focus. Windows itself would often leave it behind, because the process
+    /// that asked (the dock) never had focus.
+    /// </summary>
+    public static void ExpectNewWindow() => _expectUntil = DateTime.UtcNow.AddSeconds(10);
 
     public static void Close(TrackedWindow w) => PostMessageW(w.Handle, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
 

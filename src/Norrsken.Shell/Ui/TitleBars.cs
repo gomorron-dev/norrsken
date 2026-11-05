@@ -209,7 +209,7 @@ internal sealed class TitleBarOverlay : Window
     void Down(object sender, MouseButtonEventArgs e)
     {
         if (e.ClickCount == 2) { Post(IsZoomed(Target) ? SC_RESTORE : SC_MAXIMIZE); return; }
-        SetForegroundWindow(Target);
+        Native.ForceForeground(Target);
         GetCursorPos(out _dragFrom);
         GetWindowRect(Target, out _dragStartRect);
         _dragging = true;
