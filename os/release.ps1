@@ -37,7 +37,7 @@ New-Item -ItemType Directory -Path $out -Force | Out-Null
 $zip = Join-Path $out "Norrsken-$version.zip"
 Remove-Item $zip -ErrorAction SilentlyContinue
 Write-Host "== Zipping $payload"
-Add-Type -AssemblyName System.IO.Compression.FileSystem
+Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
 # Everything but sfx\ (interface sounds from a personal library: they ship on sticks and installs, not publicly).
 $archive = [IO.Compression.ZipFile]::Open($zip, [IO.Compression.ZipArchiveMode]::Create)
 try {
