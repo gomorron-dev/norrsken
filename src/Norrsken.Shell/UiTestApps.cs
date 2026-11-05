@@ -184,6 +184,7 @@ internal static partial class UiTest
         // ── Bin (a fake bin in the test folder: the real Recycle Bin is never touched) ──
         await BinFlow();
         await FlickerboxFlow();
+        await UpdateFlow();
         // ── Run, clipboard, overview, power, display mode ──
         RunWindow.Toggle();
         await Wait(500);
@@ -364,4 +365,79 @@ internal static partial class UiTest
                 $"{(exe == bundled ? "bundled" : "installed")} Flickerbox running {alive}; window found {win != IntPtr.Zero}; {painted} distinct colours drawn");
         }
         finally { try { if (!p.HasExited) p.Kill(true); } catch (Exception) { } }
+    }
+
+    // ── Updates: the installer's copy, staging, the update screen and cards (all in the test folder) ──
+    static async Task UpdateFlow()
+    {
+        string root = Path.Combine(_out, "update"), src = Path.Combine(root, "new"), dst = Path.Combine(root, "installed");
+        Directory.CreateDirectory(Path.Combine(src, "sub"));
+        Directory.CreateDirectory(Path.Combine(dst, "sub"));
+        Directory.CreateDirectory(Path.Combine(dst, "sfx"));
+        File.WriteAllText(Path.Combine(src, "Norrsken.Shell.exe"), "new exe");
+        File.WriteAllText(Path.Combine(src, "same.dll"), "same");
+        File.WriteAllText(Path.Combine(src, "sub", "added.txt"), "added");
+        File.WriteAllText(Path.Combine(dst, "Norrsken.Shell.exe"), "old exe, longer");
+        File.Copy(Path.Combine(src, "same.dll"), Path.Combine(dst, "same.dll"));
+        File.SetLastWriteTimeUtc(Path.Combine(dst, "same.dll"), File.GetLastWriteTimeUtc(Path.Combine(src, "same.dll")));
+        File.WriteAllText(Path.Combine(dst, "sub", "stale.txt"), "gone in the new version");
+        File.WriteAllText(Path.Combine(dst, "sfx", "click.wav"), "your sound");
+        var steps = new List<double>();
+        Updater.Mirror(src, dst, steps.Add);
+        Check("update.mirror", File.ReadAllText(Path.Combine(dst, "Norrsken.Shell.exe")) == "new exe" && File.Exists(Path.Combine(dst, "sub", "added.txt"))
+                && !File.Exists(Path.Combine(dst, "sub", "stale.txt")) && File.Exists(Path.Combine(dst, "sfx", "click.wav")) && steps.LastOrDefault() == 1,
+            "changed files replaced, new ones added, stale ones removed, the sound pack kept, progress reported to 100 %");
+
+        Updater.TestRoot = Path.Combine(root, "staging");
+        try
+        {
+            Directory.CreateDirectory(Updater.TestRoot);
+            string payload = Path.Combine(Updater.TestRoot, "9.9.9");
+            Directory.CreateDirectory(payload);
+            File.WriteAllText(Path.Combine(payload, "Norrsken.Shell.exe"), "staged");
+            File.WriteAllText(Path.Combine(Updater.TestRoot, "ready.json"), System.Text.Json.JsonSerializer.Serialize(new { Version = "9.9.9", Tag = "v9.9.9", Notes = "- **Big thing**: a new feature\n- Small fix", Payload = payload }));
+            Updater.LoadStaged();
+            bool staged = Updater.Staged?.Version == new Version(9, 9, 9) && Updater.State == Updater.Stage.Ready;
+            File.WriteAllText(Path.Combine(Updater.TestRoot, "applied.json"), System.Text.Json.JsonSerializer.Serialize(new Updater.AppliedInfo("0.3.2", App.Version, "- **The Bin** is here\n- Sharper icons\n- [Notes](https://example.com) with a link")));
+            var applied = Updater.TakeApplied();
+            bool once = applied != null && Updater.TakeApplied() == null;
+            Check("update.staging", staged && once, $"a waiting update is found at start-up ({staged}); the what's-new hand-off is shown once ({once})");
+
+            var screen = new UpdateScreen("9.9.9");
+            screen.Show();
+            await Wait(500);
+            screen.Step(1, 0.6);
+            await Wait(500);
+            Snap(screen, "ui-52-update-screen");
+            screen.Close();
+
+            UpdateCard.Ready(Updater.Staged!);
+            await Wait(700);
+            if (UpdateCard.Current is { } ready) Snap(ready, "ui-53-update-ready");
+            UpdateCard.Updated(applied!);
+            await Wait(700);
+            if (UpdateCard.Current is { } done) { Snap(done, "ui-54-update-done"); done.Close(); }
+            Check("update.cards", true, "update screen, ready card and after-update card rendered");
+
+            // An update that's already installed gets tidied away instead of reinstalled.
+            File.WriteAllText(Path.Combine(Updater.TestRoot, "ready.json"), System.Text.Json.JsonSerializer.Serialize(new { Version = "0.0.1", Tag = "v0.0.1", Notes = "", Payload = payload }));
+            Updater.LoadStaged();
+            Check("update.cleanup", !File.Exists(Path.Combine(Updater.TestRoot, "ready.json")) && !Directory.Exists(payload), "an older staged update is removed, not installed");
+        }
+        finally { Updater.TestRoot = null; }
+
+        // The real thing, end to end: a second Norrsken process runs --apply-update with the update screen and copies
+        // this build into a test folder (dry run: no registry, startup task, Flickerbox or desktop restart).
+        string target = Path.Combine(root, "apply-target");
+        Directory.CreateDirectory(target);
+        File.WriteAllText(Path.Combine(target, "leftover.txt"), "from the old version");
+        using var gone = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c exit") { UseShellExecute = false, CreateNoWindow = true })!;
+        gone.WaitForExit();
+        var psi = new System.Diagnostics.ProcessStartInfo(Environment.ProcessPath!, $"--apply-update \"{target}\" {gone.Id}") { UseShellExecute = false };
+        psi.Environment["NORRSKEN_UPDATE_DRYRUN"] = "1";
+        using var apply = System.Diagnostics.Process.Start(psi)!;
+        bool finished = await Task.Run(() => apply.WaitForExit(120_000));
+        int copied = Directory.Exists(target) ? Directory.EnumerateFiles(target, "*", SearchOption.AllDirectories).Count() : 0;
+        Check("update.apply-process", finished && apply.ExitCode == 0 && File.Exists(Path.Combine(target, "Norrsken.Shell.exe")) && !File.Exists(Path.Combine(target, "leftover.txt")),
+            $"--apply-update finished {finished} with code {(finished ? apply.ExitCode : -1)}; {copied} files in place; the old leftover removed");
     }}

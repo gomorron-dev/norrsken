@@ -924,38 +924,48 @@ public partial class SettingsWindow
     FrameworkElement UpdatePage()
     {
         var s = Section("Updates");
-        // Norrsken and Flickerbox, from GitHub releases.
+        // Norrsken and Flickerbox, from GitHub releases: the same states the update card shows.
         s.Children.Add(Heading("Norrsken"));
-        var nStatus = Status(Updater.CanUpdateHere ? $"Norrsken {App.Version}." : $"Norrsken {App.Version} (not installed in Program Files, so it doesn't update itself).");
-        var nInstall = Action("Install update", () => { }, primary: true);
-        nInstall.Visibility = Visibility.Collapsed;
+        var nStatus = Status("");
+        var nBar = new Border { Height = 4, CornerRadius = new CornerRadius(2), HorizontalAlignment = HorizontalAlignment.Left, Width = 0, Margin = new Thickness(4, 8, 0, 0) };
+        nBar.SetResourceReference(Border.BackgroundProperty, "Accent");
         var nCheck = Action("Check now", () => { });
-        nCheck.Click += async (_, _) =>
+        var nGo = Action("", () => { }, primary: true);
+        void Show()
         {
-            nCheck.IsEnabled = false;
-            nStatus.Text = "Checking GitHub…";
-            try
+            var rel = Updater.Staged ?? Updater.Latest;
+            (nStatus.Text, string go) = Updater.State switch
             {
-                var rel = App.TestMode ? null : await Updater.CheckAsync();
-                nStatus.Text = rel == null ? $"Norrsken {App.Version} is the newest version." : $"Norrsken {rel.Version} is available ({rel.Size / 1048576.0:0} MB).";
-                nInstall.Visibility = rel != null && Updater.CanUpdateHere ? Visibility.Visible : Visibility.Collapsed;
-            }
-            catch (Exception ex) { nStatus.Text = "GitHub didn't answer: " + ex.Message; }
-            nCheck.IsEnabled = true;
-        };
-        nInstall.Click += async (_, _) =>
+                Updater.Stage.Checking => ("Checking GitHub…", ""),
+                Updater.Stage.UpToDate => ($"Norrsken {App.Version} is the newest version.", ""),
+                Updater.Stage.Available => ($"Norrsken {rel?.Version} is out ({(rel?.Size ?? 0) / 1048576.0:0} MB).", Updater.CanUpdateHere ? "Download" : ""),
+                Updater.Stage.Downloading => ($"Downloading Norrsken {rel?.Version}… {Updater.Progress:P0}", ""),
+                Updater.Stage.Ready => ($"Norrsken {Updater.Staged?.Version} is downloaded and ready. Restart to install it, or it installs the next time you sign in.", "Restart now"),
+                Updater.Stage.Failed => (Updater.Error, ""),
+                _ => (Updater.CanUpdateHere ? $"Norrsken {App.Version}." : $"Norrsken {App.Version} (running from a build folder, so it doesn't update itself).", ""),
+            };
+            nGo.Content = go;
+            nGo.Visibility = go.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+            nCheck.IsEnabled = Updater.State is not (Updater.Stage.Checking or Updater.Stage.Downloading);
+            bool busy = Updater.State == Updater.Stage.Downloading;
+            nBar.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
+            if (busy && nBar.Parent is FrameworkElement host) Motion.To(nBar, WidthProperty, Math.Max(0, (host.ActualWidth - 8) * Updater.Progress), 200);
+        }
+        Updater.Changed += Show;
+        Unloaded += (_, _) => Updater.Changed -= Show;
+        nCheck.Click += async (_, _) => { if (!App.TestMode) try { await Updater.CheckAsync(); } catch (Exception) { } Show(); };
+        nGo.Click += async (_, _) =>
         {
-            if (Updater.Available is not { } rel) return;
-            nInstall.IsEnabled = nCheck.IsEnabled = false;
-            var progress = new Progress<double>(p => nStatus.Text = $"Downloading Norrsken {rel.Version}… {p:P0}");
-            try { await Updater.InstallAsync(rel, progress); nStatus.Text = "Installing: the dock restarts in a moment."; }
-            catch (Exception ex) { nStatus.Text = "Update failed: " + ex.Message; nInstall.IsEnabled = nCheck.IsEnabled = true; }
+            if (Updater.State == Updater.Stage.Ready) { Updater.InstallNow(); return; }
+            if (Updater.Latest is { } rel) try { await Updater.DownloadAsync(rel); } catch (Exception) { }
         };
         s.Children.Add(Group(
             Row("Norrsken and Flickerbox", "New versions come from github.com/" + Updater.Repo + ".", nCheck),
-            Toggle("Install updates automatically", App.Settings.AutoUpdate, on => { App.Settings.AutoUpdate = on; App.Settings.Save(); }),
-            Row("", null, nInstall)));
+            Toggle("Download updates automatically", App.Settings.AutoUpdate, on => { App.Settings.AutoUpdate = on; App.Settings.Save(); }),
+            Row("", null, nGo)));
         s.Children.Add(nStatus);
+        s.Children.Add(nBar);
+        Show();
         s.Children.Add(Heading("Windows"));
         var list = new StackPanel();
         var status = Status("");

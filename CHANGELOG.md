@@ -2,6 +2,12 @@
 
 Installed copies update themselves to the newest version (see [Updates](README.md#updates)).
 
+## 0.4.1
+
+- Updates work like they do in proper software now. Norrsken downloads a new version in the background, checks it, and then asks if you want to restart to install it. Say later and it installs the next time you sign in.
+- While it installs you get an update screen showing each step, and afterwards Norrsken tells you what's new and offers to restart your PC.
+- Settings › Updates shows exactly where things are: checking, downloading (with progress), ready to install, or what went wrong.
+- Installing an update copies only the files that changed, retries files that are briefly in use, and keeps your sounds.
 ## 0.4.0
 
 New:

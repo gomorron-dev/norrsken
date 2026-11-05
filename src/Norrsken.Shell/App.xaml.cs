@@ -137,7 +137,9 @@ public partial class App : Application
         int upd = Array.IndexOf(e.Args, "--apply-update");
         if (upd >= 0 && e.Args.Length > upd + 2 && int.TryParse(e.Args[upd + 2], out int oldPid))
         {
-            Shutdown(Updater.Apply(e.Args[upd + 1], oldPid));
+            Settings = ShellSettings.Load();
+            Theme.Apply(Settings.Theme);
+            Updater.RunApply(this, e.Args[upd + 1], oldPid); // the update screen; Norrsken comes back when it's done
             return;
         }        // Norrsken Capture: the screenshot tool alone on a normal Windows PC (no dock, no other takeovers).
         if (e.Args.Contains("--capture-agent"))
@@ -230,7 +232,7 @@ public partial class App : Application
         }
 
         // A typo'd or unsupported option must never fall through to launching the desktop.
-        string[] knownForShell = ["--welcome", "--after"];
+        string[] knownForShell = ["--welcome", "--after", "--updated"];
         if (e.Args.FirstOrDefault(a => a.StartsWith("--") && !knownForShell.Contains(a)) is { } unknown)
         {
             Log.Write($"Refusing to start: unknown option {unknown}");
@@ -267,6 +269,11 @@ public partial class App : Application
         Theme.Apply(Settings.Theme);
         TaskbarHider.RecoverFromCrash();
         FrameRate.PreferFastGpu();
+
+        // An update downloaded earlier (you chose "Later") installs now, before the dock appears.
+        Updater.LoadStaged();
+        if (Updater.InstallStagedAtStartup()) { Shutdown(); return; }
+        _justUpdated = e.Args.Contains("--updated");
 
         Tracker = new WindowTracker();
         Tracker.Start();
@@ -327,6 +334,12 @@ public partial class App : Application
         _ = Notifications.StartAsync();
         ClipboardHistory.Start();
         Updater.StartBackground();
+        if (_justUpdated && Updater.TakeApplied() is { } applied)
+        {
+            var whatsNew = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2.5) };
+            whatsNew.Tick += (_, _) => { whatsNew.Stop(); UpdateCard.Updated(applied); };
+            whatsNew.Start();
+        }
         AltTab.Start();
         NorrskenCursors.Apply();
         DisplayControl.StartNightLight();
@@ -453,6 +466,9 @@ public partial class App : Application
     /// changes or app launches; launches are recorded instead.
     /// </summary>
     public static bool TestMode { get; internal set; }
+
+    /// <summary>Started by the update screen: show what's new once the dock is up.</summary>
+    static bool _justUpdated;
 
     /// <summary>Showcase renders: the account name shown instead of the real one.</summary>
     public static string? DemoName { get; internal set; }

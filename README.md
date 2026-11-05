@@ -172,10 +172,14 @@ remove it from the Apps list or with `--uninstall-capture`.
 
 ## Updates
 
-Norrsken checks for a [new release](https://github.com/gomorron-dev/norrsken/releases/latest) a
-couple of minutes after it starts, then every six hours. If *Settings › Updates › Install updates
-automatically* is on (it is by default), it downloads the update, checks it, installs it, updates
-Flickerbox and restarts the dock.
+Norrsken looks for a [new release](https://github.com/gomorron-dev/norrsken/releases/latest) a couple
+of minutes after it starts, then every six hours, and downloads it quietly in the background. When
+it's ready, a card asks whether you want to restart Norrsken now to install it. If you say later,
+it installs the next time you sign in.
+
+Installing shows a proper update screen while the new files go in (Flickerbox gets updated too), and
+when Norrsken comes back it tells you what's new and offers to restart the PC, just to be safe. You
+can also check by hand under *Settings › Updates*, or turn the automatic downloads off there.
 
 <details>
 <summary>Making a release</summary>
