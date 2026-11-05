@@ -2,6 +2,10 @@
 
 Installed copies update themselves to the newest version (see [Updates](README.md#updates)).
 
+## 0.4.4
+
+- Close windows straight from Alt+Tab and Win+Tab: hover a window and click its X, or press Delete on the selected one. The switcher stays open so you can keep tidying.
+
 ## 0.4.3
 
 - New Win+Tab: a full-screen overview of every open window with big live previews. Click one to switch, or use the arrows and Enter. Win+Tab again, Esc or a click on the empty space closes it.

@@ -40,6 +40,7 @@ public sealed class AltTab : Window
                 case "alttab-right": Step(+1); break;
                 case "alttab-commit": Commit(); break;
                 case "alttab-cancel": Cancel(); break;
+                case "alttab-close": CloseAt(_index); break;
                 case "overview": ShowOverview(); break;
                 case "overview-left": Step(-1); break;
                 case "overview-right": Step(+1); break;
@@ -100,6 +101,21 @@ public sealed class AltTab : Window
 
     internal static void Cancel() => End();
 
+    /// <summary>Closes one window from the switcher (its X, or Delete on the selected one); the switcher stays open.</summary>
+    internal static void CloseAt(int i)
+    {
+        if (!_active || i < 0 || i >= _order.Count) return;
+        if (!App.TestMode) WindowTracker.Close(_order[i]);
+        Sound.Play("trash");
+        _order.RemoveAt(i);
+        if (_order.Count == 0) { End(); return; }
+        _index = Math.Min(i, _order.Count - 1);
+        var old = _current;
+        _current = new AltTab();
+        _current.Show();
+        old?.Close();
+    }
+
     static void End()
     {
         _active = false;
@@ -132,8 +148,17 @@ public sealed class AltTab : Window
             var stack = new StackPanel();
             stack.Children.Add(thumb);
             stack.Children.Add(caption);
-            var card = new Border { CornerRadius = Theme.R(14), Padding = new Thickness(8), Margin = new Thickness(6), BorderThickness = new Thickness(1.5), Child = stack, Cursor = System.Windows.Input.Cursors.Hand, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new ScaleTransform(1, 1) };
             int i = _slots.Count;
+            var x = new Button { Style = (Style)FindResource("IconButton"), Width = 26, Height = 26, ToolTip = "Close (Delete)", HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top,
+                Margin = new Thickness(0, -2, -2, 0), Opacity = 0, Content = new GlyphIcon { Glyph = "cross", Width = 12, Height = 12 } };
+            x.SetResourceReference(BackgroundProperty, "SurfaceSolid");
+            x.Click += (_, e) => { e.Handled = true; CloseAt(i); };
+            var layers = new Grid();
+            layers.Children.Add(stack);
+            layers.Children.Add(x);
+            var card = new Border { CornerRadius = Theme.R(14), Padding = new Thickness(8), Margin = new Thickness(6), BorderThickness = new Thickness(1.5), Child = layers, Cursor = System.Windows.Input.Cursors.Hand, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new ScaleTransform(1, 1), Tag = x };
+            card.MouseEnter += (_, _) => Motion.To(x, OpacityProperty, 1, 120);
+            card.MouseLeave += (_, _) => { if (_index != i) Motion.To(x, OpacityProperty, 0, 160); };
             card.MouseLeftButtonUp += (_, _) => { _index = i; Commit(); };
             _cards.Children.Add(card);
             _slots.Add((card, thumb, w.IsMinimized ? IntPtr.Zero : w.Handle));
@@ -202,6 +227,7 @@ public sealed class AltTab : Window
         {
             var c = _slots[i].Card;
             bool on = i == _index;
+            if (c.Tag is Button close) Motion.To(close, OpacityProperty, on || c.IsMouseOver ? 1 : 0, 140);
             if (on) { c.SetResourceReference(Border.BorderBrushProperty, "Text"); c.SetResourceReference(Border.BackgroundProperty, "Hover"); }
             else { c.BorderBrush = Brushes.Transparent; c.Background = Brushes.Transparent; }
             // The chosen window lifts a little toward you; the rest settle back.

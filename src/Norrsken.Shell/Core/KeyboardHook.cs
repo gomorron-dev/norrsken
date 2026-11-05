@@ -124,9 +124,9 @@ public static class KeyboardHook
                         _ui?.BeginInvoke(() => Pressed?.Invoke(back ? "alttab-back" : "alttab"));
                         return 1;
                     }
-                    if (_altTab && k.vkCode is 0x1B or 0x25 or 0x27 or 0x26 or 0x28 or 0x0D)
+                    if (_altTab && k.vkCode is 0x1B or 0x25 or 0x27 or 0x26 or 0x28 or 0x0D or 0x2E)
                     {
-                        string a = k.vkCode switch { 0x1B => "alttab-cancel", 0x25 or 0x26 => "alttab-left", 0x0D => "alttab-commit", _ => "alttab-right" };
+                        string a = k.vkCode switch { 0x2E => "alttab-close", 0x1B => "alttab-cancel", 0x25 or 0x26 => "alttab-left", 0x0D => "alttab-commit", _ => "alttab-right" };
                         if (k.vkCode is 0x1B or 0x0D) _altTab = false;
                         SwallowUp.Add(k.vkCode);
                         _ui?.BeginInvoke(() => Pressed?.Invoke(a));
@@ -134,6 +134,7 @@ public static class KeyboardHook
                     }
                 }
                 // While the window overview (Win+Tab) is open, arrows, Tab, Enter and Esc drive it.
+                if (down && OverviewOpen && k.vkCode == 0x2E) { SwallowUp.Add(k.vkCode); _ui?.BeginInvoke(() => Pressed?.Invoke("alttab-close")); return 1; }
                 if (down && OverviewOpen && k.vkCode is 0x1B or 0x25 or 0x26 or 0x27 or 0x28 or 0x0D or 0x09)
                 {
                     if (k.vkCode == 0x09 && (_lwin || _rwin)) { SwallowUp.Add(k.vkCode); _ui?.BeginInvoke(() => Pressed?.Invoke("overview")); return 1; } // Win+Tab again closes it
