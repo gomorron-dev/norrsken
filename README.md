@@ -4,7 +4,7 @@
 
 # Norrsken
 
-**A calm, monochrome, dock-first desktop for Windows 11.**<br>
+**My own desktop for Windows 11.** A dock, a launcher and a whole set of apps that replace the bits of Windows I didn't like looking at.<br>
 *Norrsken* is Swedish for the northern lights.
 
 [![Build](https://github.com/gomorron-dev/norrsken/actions/workflows/build.yml/badge.svg)](https://github.com/gomorron-dev/norrsken/actions/workflows/build.yml)
@@ -13,7 +13,7 @@
 ![Windows 11](https://img.shields.io/badge/Windows-11-2b2b2e?logo=windows11&logoColor=white)
 ![.NET 10](https://img.shields.io/badge/.NET-10-2b2b2e?logo=dotnet&logoColor=white)
 
-[Install](#install) · [What it replaces](#what-it-replaces) · [Updates](#updates) · [Build](#build-and-test) · [Releases](https://github.com/gomorron-dev/norrsken/releases)
+[Install](#install) · [What it replaces](#what-it-replaces) · [Updates](#updates) · [Building it](#building-it) · [Releases](https://github.com/gomorron-dev/norrsken/releases)
 
 <br>
 
@@ -26,24 +26,25 @@
 
 <br>
 
-Norrsken replaces the Windows UI you look at (the taskbar, Start, Alt+Tab, the notification
-centre, File Explorer, Settings, Task Manager, Terminal, Notepad and the Snipping Tool) with
-one quiet, consistent design. Windows itself stays underneath, so every `.exe`, game, launcher
-and anti-cheat keeps working exactly as before.
+I like how Windows runs everything, but I've never liked how it looks or how much of it is trying to
+sell me something. So Norrsken swaps out the parts you actually see: the taskbar, Start, Alt+Tab,
+the notification centre, File Explorer, Settings, Task Manager, the terminal, Notepad and the
+Snipping Tool. Windows is still there underneath, which means every game, launcher and anti-cheat
+works exactly like before.
 
-- **Monochrome by design.** Norrsken is greys only; colour comes from your apps' icons.
-- **Motion that feels physical.** Magnification, springs and squash-and-stretch, at your display's full refresh rate, in the style and speed you choose.
-- **Yours to shape.** Accent colours, corner styles, dock size and glass, and optional sounds.
-- **Yours, not Microsoft's.** No ads, no suggestions, no web results in search.
-- **Keeps itself current.** Installed copies update from this repository's releases.
+The look is mostly greys, so the only real colour on screen comes from your apps' icons. Everything
+moves: icons magnify and bounce, windows spring open, and it all runs at your monitor's full refresh
+rate. There are no ads, no "suggestions" and no web results in search. Installed copies update
+themselves from the releases here.
 
 ## The dock
 
 <img src="docs/images/dock.png" alt="The dock with magnification" width="100%">
 
-Icons magnify under the pointer and their neighbours glide apart. Launching bounces, running
-apps get a dot that stretches into a bar for the app in front, and what's playing shows up with
-art and controls. It hides itself for full-screen games, and the Win key always brings it back.
+Hover over it and the icons grow while their neighbours make room. Opening an app makes it bounce,
+running apps get a little dot (the one you're using gets a wider bar), and whatever's playing shows
+up with its cover art and controls. It gets out of the way for full-screen games, and the Windows
+key always brings it back.
 
 ## Launcher and Quick Settings
 
@@ -53,8 +54,8 @@ art and controls. It hides itself for full-screen games, and the Win key always 
 <td width="38%"><img src="docs/images/quick.png" alt="Quick Settings"></td>
 </tr>
 <tr>
-<td>Frequent apps on top, folders or A–Z below, and one search for apps, files and settings. It understands initials (<code>vsc</code>) and learns what you open.</td>
-<td>Volume, brightness, Wi-Fi, Bluetooth, night light, focus timer and now playing, one click from the clock.</td>
+<td>The apps you use most at the top, everything else in folders or A–Z, and one search box for apps, files and settings. Typing <code>vsc</code> finds Visual Studio Code, and it learns what you open.</td>
+<td>Volume, brightness, Wi-Fi, Bluetooth, night light, a focus timer and what's playing. Click the clock to open it.</td>
 </tr>
 </table>
 
@@ -62,41 +63,45 @@ art and controls. It hides itself for full-screen games, and the Win key always 
 
 <img src="docs/images/bin.png" alt="The Bin" width="100%">
 
-The Recycle Bin, rethought. It lives at the end of the dock: drop files on it and it gulps them; click
-it to see everything you've deleted, grouped by when.
+I rebuilt the Recycle Bin too. It sits at the end of the dock: drag files onto it to delete them, or
+click it to see what you've thrown away, sorted by day.
 
-- **Undo the last delete** in one go (Ctrl+Z), however many files it was.
-- **Put back** rebuilds the folder something came from if that folder is gone; **Put back in…** sends it somewhere else.
-- **Keep** an item and emptying automatically never touches it.
-- **Empty automatically** after 7, 30 or 90 days, or never.
-- **Shred** instead of delete: the data is overwritten first, so recovery tools find noise.
-- A running total of the space you've freed this month, and a preview of whatever you select.
+- Ctrl+Z brings back the last thing you deleted, even if it was fifty files at once.
+- Putting something back recreates the folder it came from if that folder is gone. You can also put it somewhere else.
+- Pin things you want to keep around, and the automatic clean-up will leave them alone.
+- Let it empty itself after 7, 30 or 90 days (or never).
+- Shred instead of delete: the file gets overwritten before it's removed.
+- It tells you how much space you've freed this month.
 
-It's Windows' own Recycle Bin underneath, so Explorer, apps and Norrsken all share one bin.
-## Settings that don't send you back to Windows
+Underneath it's still Windows' own Recycle Bin, so Explorer and other apps see the same thing.
+
+## Settings
 
 <img src="docs/images/settings.png" alt="Norrsken Settings" width="100%">
 
-Display, sound, network, Bluetooth, apps, storage, accounts, privacy and updates, all native.
-Nothing opens Windows' Settings app.
+Display, sound, network, Bluetooth, apps, storage, accounts, privacy and updates are all handled
+right there. Nothing kicks you back out to the Windows Settings app.
 
 ## Make it yours
 
 <img src="docs/images/customise.png" alt="Settings › Customise" width="100%">
 
-*Settings › Customise* changes the whole system at once, live, with a soft crossfade:
+Under *Settings › Customise* you can change the feel of the whole thing, and it updates live:
 
-- **Accent colour**: Aurora, Glacier, Violet, Rose, Ember, Gold, Mint, Crimson or any hex colour, for switches, selections, buttons, badges and the dock's running dots. Or none: Norrsken stays monochrome.
-- **Shape**: square, subtle, Norrsken or round corners on every window, card, button and the dock.
-- **Dock**: size, how much icons magnify, and how much glass shows through.
-- **Motion**: natural, springy, smooth or snappy, at any speed from brisk to relaxed. *Reduce motion* still turns it all off.
-- **Sounds** (off by default): quiet interface sounds for the launcher, the dock, switches, notifications, screenshots, the Bin and errors. Each one can be muted, previewed, or replaced with your own folder of sounds.
-## Eight themes
+- An accent colour for switches, buttons, selections and the dock's dots. Pick one of eight or type any hex code. Or leave it off and keep everything grey.
+- Corner style, from square to very round. It applies to every window, card, button and the dock.
+- Dock size, how much the icons grow, and how see-through the dock is.
+- How things move (natural, springy, smooth or snappy) and how fast.
+- Interface sounds. They're off until you turn them on, each one can be muted or previewed, and you can point it at your own folder of sounds.
+
+*Reduce motion* is still there if you'd rather nothing moved at all.
+
+## Themes
 
 <img src="docs/images/themes.png" alt="The dock in Graphite, Paper, Slate and Sand" width="100%">
 
-Graphite, Ash, Slate, Ink, Paper, Fog, Sand and High Contrast. The wallpaper, lock screen
-and Windows' own light or dark mode follow the theme.
+Eight of them: Graphite, Ash, Slate, Ink, Paper, Fog, Sand and High Contrast. The wallpaper, lock
+screen and Windows' own light or dark mode switch along with the theme.
 
 ## What it replaces
 
@@ -107,36 +112,37 @@ and Windows' own light or dark mode follow the theme.
 | Alt+Tab / Task View | Switcher and window overview | Alt+Tab, Win+Tab |
 | Action centre | Quick Settings | Win+A |
 | Notification centre | Today: notifications, calendar, week | Win+N |
-| File Explorer | Files: tabs, Quick Look, search | Win+E |
+| File Explorer | Files, with tabs, Quick Look and search | Win+E |
 | Settings | Norrsken Settings | Win+I |
 | Task Manager | Processes, live graphs, startup apps | Ctrl+Shift+Esc |
-| Windows Terminal | Norrsken Terminal (ConPTY, tabs) | |
-| Run · Win+X · Project · Clipboard | Norrsken versions of each | Win+R, Win+X, Win+P, Win+V |
-| Snipping Tool | Screenshot: area, window, screen or free-form on any monitor | PrtScn, Win+Shift+S |
-| Recycle Bin | The Bin: undo, keep, shred, auto-empty, preview | |
+| Windows Terminal | Norrsken Terminal | |
+| Run, Win+X, Project, Clipboard | Norrsken versions of each | Win+R, Win+X, Win+P, Win+V |
+| Snipping Tool | Screenshots of an area, a window, the screen or a free-form shape, on any monitor | PrtScn, Win+Shift+S |
+| Recycle Bin | The Bin | |
 | Photos, Media Player | [Flickerbox](#flickerbox) | |
-| Title bars | Centred title and pebble buttons (apps that draw their own are left alone) | |
+| Title bars | Centred title with round buttons on the right (apps that draw their own are left alone) | |
 | Desktop right-click | Norrsken's menu | |
 
-Shortcuts that act on windows (Win+D, snapping, virtual desktops) stay Windows' own.
+Shortcuts that move windows around (Win+D, snapping, virtual desktops) are still Windows' own.
 
 ## Install
 
 <details open>
-<summary><b>On a new PC: Norrsken OS</b></summary>
+<summary><b>On a fresh PC (Norrsken OS)</b></summary>
 
 <br>
 
-Turn a Windows 11 installation stick into a Norrsken OS stick, then boot from it. From an
-elevated PowerShell:
+Take a Windows 11 install stick, turn it into a Norrsken one, and install from it. From PowerShell
+running as administrator:
 
 ```powershell
 .\os\publish.ps1
 .\os\make-usb.ps1 -Drive E: -NoBackup
 ```
 
-The first run builds Norrsken into the Windows image (about an hour). After that the same
-command only syncs what changed, which takes seconds. Details in [os/README.md](os/README.md).
+The first time takes about an hour because it builds Norrsken into the Windows image. After that,
+running it again only copies what changed and takes a few seconds. There's more in
+[os/README.md](os/README.md).
 
 </details>
 
@@ -145,13 +151,13 @@ command only syncs what changed, which takes seconds. Details in [os/README.md](
 
 <br>
 
-Open the stick and run `Install Norrsken.cmd`. Nothing is erased; choose *Reinstall* to replace
-an older Norrsken.
+Open the stick and run `Install Norrsken.cmd`. Nothing gets erased. Pick *Reinstall* if you're
+replacing an older version.
 
 </details>
 
 <details>
-<summary><b>Just the screenshot tool, on any Windows PC</b></summary>
+<summary><b>Just the screenshot tool</b></summary>
 
 <br>
 
@@ -159,83 +165,83 @@ an older Norrsken.
 .\os\payload\Norrsken\Norrsken.Shell.exe --install-capture
 ```
 
-PrtScn and Win+Shift+S open Norrsken's screenshot tool instead of Windows'. Remove it from
-Windows' app list, or with `--uninstall-capture`.
+After that, PrtScn and Win+Shift+S open Norrsken's screenshot tool instead of Windows'. You can
+remove it from the Apps list or with `--uninstall-capture`.
 
 </details>
 
 ## Updates
 
-Norrsken checks the [latest release](https://github.com/gomorron-dev/norrsken/releases/latest)
-a couple of minutes after it starts and every six hours after that. With *Settings › Updates ›
-Install updates automatically* on (the default) it downloads the release, checks its SHA-256,
-replaces itself, updates Flickerbox and restarts the dock.
+Norrsken checks for a [new release](https://github.com/gomorron-dev/norrsken/releases/latest) a
+couple of minutes after it starts, then every six hours. If *Settings › Updates › Install updates
+automatically* is on (it is by default), it downloads the update, checks it, installs it, updates
+Flickerbox and restarts the dock.
 
 <details>
-<summary>Publishing a release</summary>
+<summary>Making a release</summary>
 
 <br>
 
-Bump `<Version>` in `src/Norrsken.Shell/Norrsken.Shell.csproj`, then:
+Bump `<Version>` in `src/Norrsken.Shell/Norrsken.Shell.csproj`, then run:
 
 ```powershell
-.\os\release.ps1 -Notes "What changed"
+.\os\release.ps1 -NotesFile notes.md
 ```
 
-It builds the payload with the latest Flickerbox, zips it as `Norrsken-<version>.zip` and
-creates the GitHub release `v<version>`.
+That builds everything (with the latest Flickerbox), zips it as `Norrsken-<version>.zip` and puts
+it up as release `v<version>`.
 
 </details>
 
 ## Flickerbox
 
-Norrsken's photo, video and music app lives in its own project. `publish.ps1` bundles its latest
-build; Norrsken installs it to `Program Files\Flickerbox`, makes it the default for media files,
-puts it in the launcher and updates it along with Norrsken.
+Flickerbox is my photo, video and music app. It lives in its own project, and Norrsken ships with
+it: it gets installed to `Program Files\Flickerbox`, set as the default for media files, added to
+the launcher and kept up to date with Norrsken.
 
-## Build and test
+## Building it
 
-Needs the .NET 10 SDK on Windows.
+You need the .NET 10 SDK on Windows.
 
 ```powershell
 dotnet build src/Norrsken.Shell -c Release
 ```
 
-The interaction tests drive every window on a private hidden desktop, so they never touch your
-screen, and write screenshots plus `uitest.json`:
+The UI tests click through every window on a hidden desktop, so they never get in the way of what
+you're doing. They save screenshots and a `uitest.json` report:
 
 ```powershell
 src/Norrsken.Shell/bin/Release/net10.0-windows10.0.22621.0/Norrsken.Shell.exe --uitest-isolated uitest-out
 ```
 
-The pictures in this README are drawn by Norrsken itself, offscreen, with demo data:
+The pictures in this README come straight out of Norrsken, rendered offscreen with made-up data:
 
 ```powershell
 src/Norrsken.Shell/bin/Release/net10.0-windows10.0.22621.0/Norrsken.Shell.exe --render-showcase docs/images
 ```
 
 <details>
-<summary>Repository layout</summary>
+<summary>Where things are</summary>
 
 ```
 src/Norrsken.Shell/
-  Interop/      Win32 and shell P/Invoke, icons, window identity, hidden-desktop runner
-  Core/         settings, themes, motion, hooks, system controls, updater, integration
-  Ui/           dock, launcher, quick settings, Today, Files, Settings, Terminal, Task Manager, title bars
+  Interop/      Windows API calls, icons, window identity, the hidden test desktop
+  Core/         settings, themes, motion, keyboard hooks, system controls, updater
+  Ui/           dock, launcher, quick settings, Today, Files, Settings, Terminal, Task Manager, Bin, title bars
   Showcase.cs   the README and release pictures
-  UiTest*.cs    interaction tests (hidden desktop)
+  UiTest*.cs    UI tests
 os/
-  publish.ps1   builds payload\Norrsken (self-contained) with the identity package and Flickerbox
-  make-usb.ps1  turns a Windows 11 install stick into a Norrsken OS stick
-  build-iso.ps1 the same as an ISO
-  release.ps1   publishes a GitHub release that installed copies update from
+  publish.ps1   builds the self-contained app with Flickerbox and the sounds
+  make-usb.ps1  turns a Windows 11 install stick into a Norrsken stick
+  build-iso.ps1 the same thing as an ISO
+  release.ps1   puts a release up on GitHub
   lib/          what gets built into the Windows image
-docs/           architecture, status and the pictures
+docs/           how it works, and the pictures
 ```
 
 </details>
 
-## Personal use
+## A note on Windows
 
-Norrsken OS media contains Microsoft's Windows, licensed to you: use it on your own devices and
-don't share the stick or ISO. This repository holds only Norrsken's own code and art.
+A Norrsken stick or ISO contains Microsoft's Windows, which is licensed to you. Use it on your own
+machines and don't share it. This repo only has Norrsken's own code and art in it.
