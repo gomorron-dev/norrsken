@@ -1,0 +1,13 @@
+# Build output
+bin/
+obj/
+.vs/
+*.user
+os/payload/
+os/out/
+
+# Private signing key for the Norrsken identity package (build-identity.ps1 makes a new one if missing)
+*.pfx
+*.p12
+*.key
+*.pem

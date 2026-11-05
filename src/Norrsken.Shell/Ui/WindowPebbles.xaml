@@ -1,0 +1,23 @@
+<UserControl x:Class="Norrsken.Shell.Ui.WindowPebbles"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             WindowChrome.IsHitTestVisibleInChrome="True">
+  <!-- Norrsken window controls: monochrome pebbles, right-aligned, close at the far right. -->
+  <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
+    <Button x:Name="MinButton" Style="{StaticResource Pebble}" ToolTip="Minimise"
+            AutomationProperties.Name="Minimise" Click="Min_Click">
+      <Path Data="M0,0 L6,0" Stroke="{DynamicResource SurfaceSolid}" StrokeThickness="1.5"
+            StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+    </Button>
+    <Button x:Name="MaxButton" Style="{StaticResource Pebble}" ToolTip="Maximise"
+            AutomationProperties.Name="Maximise" Click="Max_Click">
+      <Path x:Name="MaxGlyph" Data="M0,3 L6,3 M3,0 L3,6" Stroke="{DynamicResource SurfaceSolid}" StrokeThickness="1.5"
+            StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+    </Button>
+    <Button x:Name="CloseButton" Style="{StaticResource Pebble}" ToolTip="Close"
+            AutomationProperties.Name="Close" Click="Close_Click">
+      <Path Data="M0,0 L6,6 M6,0 L0,6" Stroke="{DynamicResource SurfaceSolid}" StrokeThickness="1.5"
+            StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+    </Button>
+  </StackPanel>
+</UserControl>

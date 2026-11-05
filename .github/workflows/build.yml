@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build
+        run: dotnet build src/Norrsken.Shell -c Release -nologo
+      - name: Unknown options are refused (never falls through to starting the desktop)
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem src/Norrsken.Shell/bin/Release -Recurse -Filter Norrsken.Shell.exe | Select-Object -First 1
+          $p = Start-Process $exe.FullName -ArgumentList '--definitely-not-an-option' -PassThru -Wait
+          if ($p.ExitCode -ne 64) { throw "expected exit code 64, got $($p.ExitCode)" }

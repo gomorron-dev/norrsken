@@ -1,0 +1,32 @@
+name: Bug report
+description: Something in Norrsken doesn't look or work right
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you saw. A screenshot helps a lot.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Norrsken version
+      description: Settings › Updates shows it.
+      placeholder: "0.3.0"
+  - type: dropdown
+    id: install
+    attributes:
+      label: Installed as
+      options:
+        - Norrsken OS (from the stick)
+        - Install Norrsken (on an existing Windows)
+        - Norrsken Capture only
+        - Running from a build
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: The last lines of %LOCALAPPDATA%\Norrsken\logs\shell.log, if anything looks related.
+      render: text

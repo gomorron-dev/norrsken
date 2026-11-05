@@ -1,0 +1,54 @@
+<Window x:Class="Norrsken.Shell.Ui.SetupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Install Norrsken" WindowStyle="None" ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
+        Width="660" SizeToContent="Height" Background="{DynamicResource SurfaceSolid}" FontFamily="{StaticResource UiFont}">
+  <Border x:Name="Root" BorderBrush="{DynamicResource Border}" BorderThickness="1" Padding="40,36,40,30"
+          TextElement.Foreground="{DynamicResource Text}" TextElement.FontFamily="{StaticResource UiFont}">
+    <StackPanel>
+      <Border Width="52" Height="52" CornerRadius="15" Background="{DynamicResource Text}" HorizontalAlignment="Left">
+        <Viewbox Margin="12">
+          <Canvas Width="24" Height="24">
+            <Path Data="M3,14 C6,4 10,4 12,9.5 C14,15 18,15 21,5" Stroke="{DynamicResource SurfaceSolid}"
+                  StrokeThickness="2.4" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+            <Path Data="M5,20 L19,20" Stroke="{DynamicResource SurfaceSolid}" StrokeThickness="2.2" Opacity="0.55"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+          </Canvas>
+        </Viewbox>
+      </Border>
+      <TextBlock x:Name="Heading" Text="Install Norrsken on this PC" FontFamily="{StaticResource DisplayFont}" FontSize="30" FontWeight="SemiBold" Margin="0,24,0,0"/>
+      <TextBlock x:Name="Subtitle" FontSize="15" Foreground="{DynamicResource TextDim}" Margin="1,8,0,0" TextWrapping="Wrap"
+                 Text="Nothing is erased. Your files, apps, settings and Windows activation all stay — Norrsken becomes your desktop."/>
+
+      <StackPanel x:Name="Options" Margin="0,22,0,0">
+        <Border Style="{StaticResource Group}">
+          <StackPanel>
+            <StackPanel x:Name="ReinstallRow" Visibility="Collapsed">
+              <CheckBox x:Name="ReinstallToggle" Style="{StaticResource Toggle}" Content="Clean reinstall (remove the Norrsken that's installed first)" IsChecked="True"/>
+              <TextBlock FontSize="12" Foreground="{DynamicResource TextDim}" TextWrapping="Wrap" Margin="0,-6,0,12" Text="Norrsken is already on this PC. Its program files are replaced completely; your Norrsken settings stay."/>
+              <Border Style="{StaticResource Hairline}"/>
+            </StackPanel>
+            <CheckBox x:Name="RefreshToggle" Style="{StaticResource Toggle}" Content="Also refresh Windows itself"
+                      Checked="Options_Changed" Unchecked="Options_Changed"/>
+            <TextBlock FontSize="12" Foreground="{DynamicResource TextDim}" TextWrapping="Wrap" Margin="0,-6,0,12"
+                       Text="Reinstalls Windows from this stick while keeping your files and apps. Takes about an hour and restarts a few times. Usually not needed."/>
+            <StackPanel x:Name="LicenceRow" Visibility="Collapsed">
+              <Border Style="{StaticResource Hairline}"/>
+              <CheckBox x:Name="LicenceToggle" Style="{StaticResource Toggle}" Content="I accept the Microsoft Software License Terms"
+                        Checked="Options_Changed" Unchecked="Options_Changed"/>
+              <Button Style="{StaticResource LinkButton}" Content="Read the licence terms  ›" HorizontalAlignment="Left" Margin="-6,-8,0,10" Click="Licence_Click"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+      <ItemsControl x:Name="StepList" Margin="0,18,0,0" Visibility="Collapsed" Focusable="False" ItemTemplate="{StaticResource TaskRow}"/>
+
+      <Grid Margin="0,26,0,0">
+        <Button x:Name="CancelButton" Style="{StaticResource LinkButton}" FontSize="13.5" Content="Cancel" HorizontalAlignment="Left" VerticalAlignment="Center" Click="Cancel_Click"/>
+        <Button x:Name="InstallButton" Style="{StaticResource PrimaryButton}" Content="Install" HorizontalAlignment="Right" Click="Install_Click"/>
+        <Button x:Name="StartButton" Style="{StaticResource PrimaryButton}" Content="Start Norrsken" HorizontalAlignment="Right" Visibility="Collapsed" Click="Start_Click"/>
+      </Grid>
+    </StackPanel>
+  </Border>
+</Window>

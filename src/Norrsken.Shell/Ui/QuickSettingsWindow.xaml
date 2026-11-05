@@ -1,0 +1,167 @@
+<Window x:Class="Norrsken.Shell.Ui.QuickSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:Norrsken.Shell.Ui"
+        Title="Norrsken Quick Settings" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" Width="396" SizeToContent="Height"
+        FontFamily="{StaticResource UiFont}">
+  <Grid x:Name="Card" Margin="24" RenderTransformOrigin="0.85,1">
+    <Grid.RenderTransform>
+      <TransformGroup><ScaleTransform x:Name="CardScale"/><TranslateTransform x:Name="CardShift"/></TransformGroup>
+    </Grid.RenderTransform>
+
+    <Border CornerRadius="22" Background="{DynamicResource SurfaceSolid}">
+      <Border.Effect>
+        <DropShadowEffect BlurRadius="36" ShadowDepth="10" Direction="270"
+                          Color="{DynamicResource ShadowColor}" Opacity="{DynamicResource ShadowOpacity}"/>
+      </Border.Effect>
+    </Border>
+
+    <Border CornerRadius="22" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource DockLine}" BorderThickness="1"
+            Padding="18,16,18,14" TextElement.Foreground="{DynamicResource Text}" TextElement.FontFamily="{StaticResource UiFont}">
+      <StackPanel x:Name="Body">
+        <!-- Time & date -->
+        <Grid Margin="4,0,0,14">
+          <StackPanel>
+            <TextBlock x:Name="TimeText" FontFamily="{StaticResource DisplayFont}" FontSize="34" FontWeight="SemiBold"/>
+            <TextBlock x:Name="DateText" FontSize="12.5" Foreground="{DynamicResource TextDim}" Margin="1,0,0,0"/>
+          </StackPanel>
+          <Button Style="{StaticResource IconButton}" Width="34" Height="34" HorizontalAlignment="Right" VerticalAlignment="Top"
+                  ToolTip="Norrsken settings" AutomationProperties.Name="Norrsken settings" Click="Settings_Click">
+            <ui:GlyphIcon Glyph="settings" Width="17" Height="17"/>
+          </Button>
+        </Grid>
+
+        <!-- Now playing -->
+        <Border x:Name="MediaCard" Style="{StaticResource Group}" Padding="12" Margin="0,0,0,12" Visibility="Collapsed">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Border x:Name="ArtFrame" Width="54" Height="54" CornerRadius="11" Background="{DynamicResource Pressed}">
+              <ui:GlyphIcon x:Name="ArtGlyph" Glyph="music" Width="22" Height="22" Foreground="{DynamicResource TextDim}"/>
+            </Border>
+            <StackPanel Grid.Column="1" Margin="12,0,8,0" VerticalAlignment="Center">
+              <TextBlock x:Name="MediaTitle" FontWeight="SemiBold" FontSize="13.5" TextTrimming="CharacterEllipsis"/>
+              <TextBlock x:Name="MediaArtist" FontSize="12" Foreground="{DynamicResource TextDim}" TextTrimming="CharacterEllipsis" Margin="0,1,0,0"/>
+              <TextBlock x:Name="MediaSource" FontSize="11" Foreground="{DynamicResource TextDim}" Opacity="0.75" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+              <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="Previous"
+                      AutomationProperties.Name="Previous track" Click="Previous_Click">
+                <ui:GlyphIcon Glyph="prev" Filled="True" Width="13" Height="13"/>
+              </Button>
+              <Button Style="{StaticResource RoundSolid}" Width="38" Height="38" Margin="4,0"
+                      AutomationProperties.Name="Play or pause" Click="PlayPause_Click">
+                <ui:GlyphIcon x:Name="PlayGlyph" Glyph="play-solid" Filled="True" Width="15" Height="15"/>
+              </Button>
+              <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="Next"
+                      AutomationProperties.Name="Next track" Click="Next_Click">
+                <ui:GlyphIcon Glyph="next" Filled="True" Width="13" Height="13"/>
+              </Button>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- Volume -->
+        <Grid x:Name="VolumeRow" Margin="0,0,0,2">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="40"/>
+          </Grid.ColumnDefinitions>
+          <Button x:Name="MuteButton" Style="{StaticResource IconButton}" Width="36" Height="36" ToolTip="Mute"
+                  AutomationProperties.Name="Mute" Click="Mute_Click">
+            <ui:GlyphIcon x:Name="VolumeGlyph" Glyph="volume" Width="18" Height="18"/>
+          </Button>
+          <Slider x:Name="VolumeSlider" Grid.Column="1" Style="{StaticResource NSlider}" Minimum="0" Maximum="100"
+                  Margin="8,0" AutomationProperties.Name="Volume" ValueChanged="Volume_Changed"/>
+          <TextBlock x:Name="VolumeText" Grid.Column="2" TextAlignment="Right" FontSize="12"
+                     Foreground="{DynamicResource TextDim}" VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- Brightness (built-in displays only) -->
+        <Grid x:Name="BrightnessRow" Visibility="Collapsed" Margin="0,2,0,2">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="36"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="40"/>
+          </Grid.ColumnDefinitions>
+          <ui:GlyphIcon Glyph="sun" Width="18" Height="18"/>
+          <Slider x:Name="BrightnessSlider" Grid.Column="1" Style="{StaticResource NSlider}" Minimum="0" Maximum="100"
+                  Margin="8,0" AutomationProperties.Name="Brightness" ValueChanged="Brightness_Changed"/>
+          <TextBlock x:Name="BrightnessText" Grid.Column="2" TextAlignment="Right" FontSize="12"
+                     Foreground="{DynamicResource TextDim}" VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- Tiles -->
+        <UniformGrid x:Name="Tiles" Columns="3" Margin="-4,10,-4,0">
+          <Button x:Name="NetworkTile" Style="{StaticResource Tile}" Click="Network_Click" MouseRightButtonUp="NetworkMore_Click" ToolTip="Click: Wi-Fi on/off · right-click: network settings" AutomationProperties.Name="Wi-Fi">
+            <DockPanel>
+              <ui:GlyphIcon x:Name="NetworkGlyph" DockPanel.Dock="Top" Glyph="wifi" Width="19" Height="19" HorizontalAlignment="Left"/>
+              <StackPanel VerticalAlignment="Bottom">
+                <TextBlock Text="Network" FontSize="12.5" FontWeight="SemiBold"/>
+                <TextBlock x:Name="NetworkText" FontSize="11" Opacity="0.65" TextTrimming="CharacterEllipsis" MaxWidth="86"/>
+              </StackPanel>
+            </DockPanel>
+          </Button>
+          <Button x:Name="BluetoothTile" Style="{StaticResource Tile}" Click="Bluetooth_Click" MouseRightButtonUp="BluetoothMore_Click" ToolTip="Click: Bluetooth on/off · right-click: devices" AutomationProperties.Name="Bluetooth">
+            <DockPanel>
+              <ui:GlyphIcon DockPanel.Dock="Top" Glyph="bluetooth" Width="19" Height="19" HorizontalAlignment="Left"/>
+              <StackPanel VerticalAlignment="Bottom">
+                <TextBlock Text="Bluetooth" FontSize="12.5" FontWeight="SemiBold"/>
+                <TextBlock x:Name="BluetoothText" Text="Devices" FontSize="11" Opacity="0.65"/>
+              </StackPanel>
+            </DockPanel>
+          </Button>
+          <Button x:Name="ThemeTile" Style="{StaticResource Tile}" Click="Theme_Click" AutomationProperties.Name="Light appearance">
+            <DockPanel>
+              <ui:GlyphIcon DockPanel.Dock="Top" Glyph="contrast" Width="19" Height="19" HorizontalAlignment="Left"/>
+              <StackPanel VerticalAlignment="Bottom">
+                <TextBlock Text="Light" FontSize="12.5" FontWeight="SemiBold"/>
+                <TextBlock x:Name="ThemeText" FontSize="11" Opacity="0.65"/>
+              </StackPanel>
+            </DockPanel>
+          </Button>
+          <Button Style="{StaticResource Tile}" Click="NightLight_Click" AutomationProperties.Name="Night light settings">
+            <DockPanel>
+              <ui:GlyphIcon DockPanel.Dock="Top" Glyph="moon" Width="19" Height="19" HorizontalAlignment="Left"/>
+              <StackPanel VerticalAlignment="Bottom">
+                <TextBlock Text="Night light" FontSize="12.5" FontWeight="SemiBold"/>
+                <TextBlock Text="Display" FontSize="11" Opacity="0.65"/>
+              </StackPanel>
+            </DockPanel>
+          </Button>
+          <Button x:Name="FocusTile" Style="{StaticResource Tile}" Click="Focus_Click" ToolTip="A 25-minute focus session" AutomationProperties.Name="Focus">
+            <DockPanel>
+              <ui:GlyphIcon DockPanel.Dock="Top" Glyph="focus" Width="19" Height="19" HorizontalAlignment="Left"/>
+              <StackPanel VerticalAlignment="Bottom">
+                <TextBlock Text="Focus" FontSize="12.5" FontWeight="SemiBold"/>
+                <TextBlock x:Name="FocusText" Text="25 min" FontSize="11" Opacity="0.65"/>
+              </StackPanel>
+            </DockPanel>
+          </Button>
+          <Button Style="{StaticResource Tile}" Click="Notifications_Click" ToolTip="Today: notifications and calendar (Win+N)" AutomationProperties.Name="Notifications">
+            <DockPanel>
+              <ui:GlyphIcon DockPanel.Dock="Top" Glyph="bell" Width="19" Height="19" HorizontalAlignment="Left"/>
+              <StackPanel VerticalAlignment="Bottom">
+                <TextBlock Text="Alerts" FontSize="12.5" FontWeight="SemiBold"/>
+                <TextBlock x:Name="AlertsText" Text="Today" FontSize="11" Opacity="0.65"/>
+              </StackPanel>
+            </DockPanel>
+          </Button>
+        </UniformGrid>
+
+        <Grid Margin="4,12,0,0">
+          <StackPanel x:Name="BatteryRow" Orientation="Horizontal" Visibility="Collapsed" VerticalAlignment="Center">
+            <ui:GlyphIcon Glyph="battery" Width="17" Height="17" Foreground="{DynamicResource TextDim}"/>
+            <TextBlock x:Name="BatteryText" FontSize="12" Foreground="{DynamicResource TextDim}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+          </StackPanel>
+          <Button Style="{StaticResource LinkButton}" HorizontalAlignment="Right" Click="AllSettings_Click">All settings  ›</Button>
+        </Grid>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

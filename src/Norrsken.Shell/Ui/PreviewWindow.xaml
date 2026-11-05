@@ -1,0 +1,42 @@
+<Window x:Class="Norrsken.Shell.Ui.PreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Norrsken Window Preview" WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False"
+        Topmost="True" ShowActivated="False" SizeToContent="WidthAndHeight"
+        Background="{DynamicResource SurfaceSolid}" FontFamily="{StaticResource UiFont}">
+  <!-- Not a layered window on purpose: DWM thumbnails only composite into regular windows. -->
+  <Border x:Name="Root" Padding="6" TextElement.Foreground="{DynamicResource Text}">
+    <ItemsControl x:Name="Slots" Focusable="False">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Border x:Name="SlotBd" Width="252" CornerRadius="12" Padding="8,7,8,8" Margin="2" Background="Transparent"
+                  Cursor="Hand" MouseLeftButtonUp="Slot_Click" AutomationProperties.Name="{Binding Title}">
+            <StackPanel>
+              <DockPanel Margin="2,0,0,7" Height="22">
+                <Button DockPanel.Dock="Right" Style="{StaticResource Pebble}" ToolTip="Close window"
+                        AutomationProperties.Name="Close window" Click="SlotClose_Click">
+                  <Path Data="M0,0 L6,6 M6,0 L0,6" Stroke="{DynamicResource SurfaceSolid}" StrokeThickness="1.5"
+                        StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                </Button>
+                <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                <TextBlock Text="{Binding Title}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+              </DockPanel>
+              <Border x:Name="Thumb" Height="142" CornerRadius="7" Background="{DynamicResource SurfaceAlt}">
+                <!-- Shown if the window can't be previewed (e.g. minimised); DWM draws over it otherwise. -->
+                <Image Source="{Binding Icon}" Width="40" Height="40" Opacity="0.45"/>
+              </Border>
+            </StackPanel>
+          </Border>
+          <DataTemplate.Triggers>
+            <Trigger SourceName="SlotBd" Property="IsMouseOver" Value="True">
+              <Setter TargetName="SlotBd" Property="Background" Value="{DynamicResource Hover}"/>
+            </Trigger>
+          </DataTemplate.Triggers>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </Border>
+</Window>
