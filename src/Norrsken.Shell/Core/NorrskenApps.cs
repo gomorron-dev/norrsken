@@ -123,7 +123,7 @@ public static class NorrskenApps
                     if (s.LookKey == last) return;
                     last = s.LookKey;
                     App.Settings.TakeLook(s);
-                    Theme.Apply(s.Theme);
+                    Theme.Crossfade(() => Theme.Apply(s.Theme));
                 });
                 Thread.Sleep(600);
             }

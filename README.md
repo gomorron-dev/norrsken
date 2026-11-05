@@ -32,7 +32,8 @@ one quiet, consistent design. Windows itself stays underneath, so every `.exe`, 
 and anti-cheat keeps working exactly as before.
 
 - **Monochrome by design.** Norrsken is greys only; colour comes from your apps' icons.
-- **Motion that feels physical.** Magnification, springs and squash-and-stretch, at your display's full refresh rate.
+- **Motion that feels physical.** Magnification, springs and squash-and-stretch, at your display's full refresh rate, in the style and speed you choose.
+- **Yours to shape.** Accent colours, corner styles, dock size and glass, and optional sounds.
 - **Yours, not Microsoft's.** No ads, no suggestions, no web results in search.
 - **Keeps itself current.** Installed copies update from this repository's releases.
 
@@ -79,6 +80,17 @@ It's Windows' own Recycle Bin underneath, so Explorer, apps and Norrsken all sha
 Display, sound, network, Bluetooth, apps, storage, accounts, privacy and updates, all native.
 Nothing opens Windows' Settings app.
 
+## Make it yours
+
+<img src="docs/images/customise.png" alt="Settings › Customise" width="100%">
+
+*Settings › Customise* changes the whole system at once, live, with a soft crossfade:
+
+- **Accent colour**: Aurora, Glacier, Violet, Rose, Ember, Gold, Mint, Crimson or any hex colour, for switches, selections, buttons, badges and the dock's running dots. Or none: Norrsken stays monochrome.
+- **Shape**: square, subtle, Norrsken or round corners on every window, card, button and the dock.
+- **Dock**: size, how much icons magnify, and how much glass shows through.
+- **Motion**: natural, springy, smooth or snappy, at any speed from brisk to relaxed. *Reduce motion* still turns it all off.
+- **Sounds** (off by default): quiet interface sounds for the launcher, the dock, switches, notifications, screenshots, the Bin and errors. Each one can be muted, previewed, or replaced with your own folder of sounds.
 ## Eight themes
 
 <img src="docs/images/themes.png" alt="The dock in Graphite, Paper, Slate and Sand" width="100%">

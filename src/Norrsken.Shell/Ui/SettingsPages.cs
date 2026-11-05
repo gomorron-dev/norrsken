@@ -213,8 +213,7 @@ public partial class SettingsWindow
     void LookChanged()
     {
         App.Settings.Save();
-        Theme.Apply(App.Settings.Theme);
-        _dock?.ApplySettings();
+        Theme.Crossfade(() => { Theme.Apply(App.Settings.Theme); _dock?.ApplySettings(); });
         NorrskenApps.BroadcastTheme();
     }
 

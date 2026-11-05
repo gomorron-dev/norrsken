@@ -180,4 +180,38 @@ public static class Theme
     }
 
     static Color Parse(string hex) => (Color)ColorConverter.ConvertFromString(hex);
-}
+
+    /// <summary>
+    /// Runs a look change (theme, accent, corners…) as a soft crossfade instead of a hard cut: every open window
+    /// keeps a picture of how it looked, the change happens underneath, and the picture fades away.
+    /// </summary>
+    public static void Crossfade(Action change)
+    {
+        var shots = new List<(System.Windows.Documents.AdornerLayer Layer, Snapshot Adorner)>();
+        if (!Motion.Reduced && Application.Current != null)
+            foreach (Window w in Application.Current.Windows)
+            {
+                try
+                {
+                    if (!w.IsVisible || w.Content is not UIElement root || root.RenderSize.Width < 2 || root.RenderSize.Height < 2) continue;
+                    if (System.Windows.Documents.AdornerLayer.GetAdornerLayer(root) is not { } layer) continue;
+                    var dpi = VisualTreeHelper.GetDpi(root);
+                    var rtb = new System.Windows.Media.Imaging.RenderTargetBitmap((int)(root.RenderSize.Width * dpi.DpiScaleX), (int)(root.RenderSize.Height * dpi.DpiScaleY),
+                        96 * dpi.DpiScaleX, 96 * dpi.DpiScaleY, PixelFormats.Pbgra32);
+                    rtb.Render(root);
+                    rtb.Freeze();
+                    var a = new Snapshot(root, rtb) { IsHitTestVisible = false };
+                    layer.Add(a);
+                    shots.Add((layer, a));
+                }
+                catch (Exception) { }
+            }
+        change();
+        foreach (var (layer, a) in shots)
+            Motion.To(a, UIElement.OpacityProperty, 0, 280, Motion.InOut, () => layer.Remove(a));
+    }
+
+    sealed class Snapshot(UIElement owner, ImageSource image) : System.Windows.Documents.Adorner(owner)
+    {
+        protected override void OnRender(DrawingContext dc) => dc.DrawImage(image, new Rect(owner.RenderSize));
+    }}

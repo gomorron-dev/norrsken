@@ -67,6 +67,7 @@ public static class Showcase
         Do("themes.png", Themes, 1200, 560);
         Do("social.png", () => Social(dusk), 1280, 640);
         Do("bin.png", () => BinShot(dusk), 1080, 700);
+        Do("customise.png", () => CustomiseShot(dusk), 1080, 760);
         Do("logo.png", () => Logo(512), 512, 512);
         Theme.Apply("paper");
         Do("hero-light.png", () => Hero(paper), 1600, 1000);
@@ -113,6 +114,22 @@ public static class Showcase
         window.TestSelectFirst();
         Bin.TestRoot = null;
         return shot;
+    }
+
+    /// <summary>Settings › Customise with an accent picked, so the README shows what the options do.</summary>
+    static FrameworkElement CustomiseShot(Brush wall)
+    {
+        string accent = App.Settings.Accent;
+        App.Settings.Accent = "glacier";
+        Theme.Apply("graphite");
+        var w = new SettingsWindow(null);
+        w.ShowPage("customise");
+        var shot = WindowShot(w, 1000, 680, wall);
+        Snapshot(shot, 1080, 760); // lay it out while the accent is on
+        var frozen = new Image { Source = Snapshot(shot, 1080, 760), Width = 1080, Height = 760 };
+        App.Settings.Accent = accent;
+        Theme.Apply("graphite");
+        return frozen;
     }
 
     static FrameworkElement Hero(Brush wall)

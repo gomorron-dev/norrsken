@@ -420,7 +420,7 @@ public partial class App : Application
     public static void SetTheme(string id)
     {
         Settings.Theme = id;
-        Theme.Apply(id);
+        Theme.Crossfade(() => Theme.Apply(id));
         Settings.Save();
         _ = SystemLook.ApplyAsync(id);
         FrameStyler.Refresh();

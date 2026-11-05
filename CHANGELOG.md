@@ -2,6 +2,15 @@
 
 Installed copies update themselves to the newest release; see [Updates](README.md#updates).
 
+## 0.4.0
+
+- **Settings › Customise**: accent colours (eight, or any hex), corner shapes (square to round, across every window, card, button and the dock), dock size, magnification strength and glass, motion style (natural, springy, smooth, snappy) and speed. Everything applies live with a soft crossfade, in every open Norrsken window.
+- **Interface sounds** (off by default): launcher, dock, switches, notifications, screenshots, deleting, emptying and restoring, errors, start-up; hover and volume ticks are off even when sounds are on. Each can be muted or previewed, and any folder of .wav files can be used as a sound pack.
+- **Fixed**: sound devices and per-app volume failed after first use ("can't cast MMDeviceEnumerator"): Settings' output/input lists and app volumes work again.
+- **Fixed**: Norrsken's apps (Files, Notes, Bin, Settings, Terminal, Task Manager) and the screenshot tool now log unexpected errors and keep running instead of closing.
+- **Fixed**: a folder size or temp-file measurement that failed left its label stuck; it now says so.
+- **Fixed**: the dock's Bin noticed deletions only on drives whose bin existed at start-up.
+- **Fixed**: open Norrsken apps followed theme changes but not the other look settings.
 ## 0.3.2
 
 - **The Bin**: a new Norrsken app and dock item. Drop files on it to delete them; open it to see what you deleted, grouped by day, with a preview. Undo the last delete in one go, put things back (rebuilding a missing folder) or somewhere else, keep items safe from auto-emptying, empty automatically after 7/30/90 days, shred instead of delete, and see how much space you've freed this month. Right-click it in the dock to undo or empty.
