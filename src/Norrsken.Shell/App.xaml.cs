@@ -30,6 +30,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         FrameRate.Apply(); // before any animation exists: everything moves at the display's refresh rate
+        Ui.Switches.Register();
 
         int st = Array.IndexOf(e.Args, "--selftest");
         if (st >= 0)
@@ -68,6 +69,11 @@ public partial class App : Application
             return;
         }
 
+        if (ArgAfter("--render-showcase") is { } showcaseDir)
+        {
+            Shutdown(Showcase.Run(Path.GetFullPath(showcaseDir)));
+            return;
+        }
         if (ArgAfter("--render-branding") is { } brandingDir)
         {
             Shutdown(Branding.Render(Path.GetFullPath(brandingDir)));
@@ -444,6 +450,9 @@ public partial class App : Application
     /// changes or app launches; launches are recorded instead.
     /// </summary>
     public static bool TestMode { get; internal set; }
+
+    /// <summary>Showcase renders: the account name shown instead of the real one.</summary>
+    public static string? DemoName { get; internal set; }
     public static List<string> TestLaunches { get; } = new();
 
     public static void LaunchSafely(AppEntry app)

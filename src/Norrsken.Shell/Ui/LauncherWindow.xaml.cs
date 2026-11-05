@@ -47,8 +47,9 @@ public partial class LauncherWindow : Window
         InitializeComponent();
         App.Apps.CollectionChanged += (_, _) => { _homeDirty = true; QueueRefilter(); };
         App.Pinned.CollectionChanged += (_, _) => _homeDirty = true;
-        UserName.Text = Environment.UserName;
-        Initial.Text = Environment.UserName.Length > 0 ? Environment.UserName[..1].ToUpperInvariant() : "?";
+        string user = App.DemoName ?? AccountName();
+        UserName.Text = user;
+        Initial.Text = user.Length > 0 ? user[..1].ToUpperInvariant() : "?";
         LoadAvatar();
         _searchDelay.Tick += (_, _) => SearchOthers();
         Refilter();
@@ -77,6 +78,22 @@ public partial class LauncherWindow : Window
     const double FullHeight = 680, ShadowMargin = 30;
 
     /// <summary>The top of the dock on screen (DIPs); the launcher always ends above it.</summary>
+    /// <summary>The account's display name ("Hannes Sorhall") when Windows has one, else the sign-in name.</summary>
+    static string AccountName()
+    {
+        try
+        {
+            var sb = new System.Text.StringBuilder(256);
+            uint n = (uint)sb.Capacity;
+            if (GetUserNameExW(3 /* NameDisplay */, sb, ref n) && sb.Length > 0) return sb.ToString();
+        }
+        catch (Exception) { }
+        return Environment.UserName;
+    }
+
+    [System.Runtime.InteropServices.DllImport("secur32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    static extern bool GetUserNameExW(int format, System.Text.StringBuilder name, ref uint size);
+
     static double DockTop()
     {
         var screen = SystemParameters.PrimaryScreenHeight;

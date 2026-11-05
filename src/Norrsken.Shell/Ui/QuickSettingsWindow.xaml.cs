@@ -66,12 +66,20 @@ public partial class QuickSettingsWindow : Window
     }
 
     /// <summary>Self-test: fill every section with live data without showing the window.</summary>
-    internal void PrepareForPreview()
+    internal void PrepareForPreview(MediaController.State? demo = null)
     {
         RefreshStatus();
         UpdateTime();
         // Fetch off the UI thread (blocking on WinRT awaits here would deadlock), apply on it.
-        ApplyMedia(Task.Run(SystemStatus.Media.GetAsync).GetAwaiter().GetResult());
+        ApplyMedia(demo ?? Task.Run(SystemStatus.Media.GetAsync).GetAwaiter().GetResult());
+        if (demo != null)
+        {
+            _updating = true;
+            VolumeSlider.Value = 62;
+            VolumeText.Text = "62";
+            VolumeGlyph.Glyph = "volume";
+            _updating = false;
+        }
         ApplyBrightness(Task.Run(SystemStatus.GetBrightness).GetAwaiter().GetResult());
     }
 

@@ -390,23 +390,71 @@ public sealed class TaskManagerWindow : Window
         return grid;
     }
 
-    /// <summary>A line graph over the last minute with a soft fill underneath.</summary>
-    static FrameworkElement Graph(IEnumerable<double> values, double w, double h, double thickness)
-    {
-        var v = values.ToList();
-        var canvas = new Canvas { Width = w, Height = h, ClipToBounds = true };
-        if (v.Count < 2) return canvas;
-        var pts = v.Select((x, i) => new Point(w * i / 59.0 + (60 - v.Count) * w / 59.0, h - h * Math.Clamp(x, 0, 100) / 100)).ToList();
-        var line = new Polyline { Points = new PointCollection(pts), StrokeThickness = thickness, StrokeLineJoin = PenLineJoin.Round };
-        line.SetResourceReference(Shape.StrokeProperty, "Text");
-        var fillPts = new PointCollection(pts) { new Point(pts[^1].X, h), new Point(pts[0].X, h) };
-        var fill = new Polygon { Points = fillPts, Opacity = 0.12 };
-        fill.SetResourceReference(Shape.FillProperty, "Text");
-        canvas.Children.Add(fill);
-        canvas.Children.Add(line);
-        return new Viewbox { Child = canvas, Stretch = Stretch.Fill, Height = h, MaxWidth = 2000 };
-    }
+    /// <summary>A line graph over the last minute with a soft fill underneath, drawn at its real size.</summary>
+    static FrameworkElement Graph(IEnumerable<double> values, double w, double h, double thickness) =>
+        new LiveGraph(values.ToList(), thickness, grid: h > 100) { Height = h, MinWidth = Math.Min(w, 120), HorizontalAlignment = HorizontalAlignment.Stretch };
 
+    /// <summary>
+    /// Sixty samples, newest on the right. Before a minute of history exists the line starts where the
+    /// data starts and a hairline baseline covers the rest, so a fresh graph never looks broken.
+    /// </summary>
+    sealed class LiveGraph(List<double> values, double thickness, bool grid) : FrameworkElement
+    {
+        protected override void OnRender(DrawingContext dc)
+        {
+            double w = ActualWidth, h = ActualHeight;
+            if (w < 4 || h < 4) return;
+            var ink = (TryFindResource("Text") as SolidColorBrush)?.Color ?? Colors.White;
+            Brush Ink(byte a) { var b = new SolidColorBrush(Color.FromArgb(a, ink.R, ink.G, ink.B)); b.Freeze(); return b; }
+            double top = thickness, bottom = h - thickness / 2;
+            double Y(double v) => bottom - (bottom - top) * Math.Clamp(v, 0, 100) / 100;
+
+            if (grid)
+            {
+                var gridPen = new Pen(Ink(22), 1);
+                gridPen.Freeze();
+                for (int i = 1; i < 4; i++) { double y = Math.Round(h * i / 4) + 0.5; dc.DrawLine(gridPen, new Point(0, y), new Point(w, y)); }
+                for (int i = 1; i < 6; i++) { double x = Math.Round(w * i / 6) + 0.5; dc.DrawLine(gridPen, new Point(x, 0), new Point(x, h)); }
+            }
+            var basePen = new Pen(Ink(40), 1);
+            basePen.Freeze();
+            dc.DrawLine(basePen, new Point(0, bottom), new Point(w, bottom));
+            if (values.Count == 0) return;
+
+            double step = w / 59.0, x0 = w - step * (values.Count - 1);
+            var pts = values.Select((v, i) => new Point(x0 + step * i, Y(v))).ToList();
+            if (pts.Count == 1) pts.Insert(0, new Point(Math.Max(0, pts[0].X - step), pts[0].Y));
+
+            var line = new StreamGeometry();
+            using (var g = line.Open())
+            {
+                g.BeginFigure(pts[0], false, false);
+                // Gentle curves between samples instead of sharp corners.
+                for (int i = 1; i < pts.Count; i++)
+                {
+                    var a = pts[i - 1]; var b = pts[i];
+                    double mx = (a.X + b.X) / 2;
+                    g.BezierTo(new Point(mx, a.Y), new Point(mx, b.Y), b, true, true);
+                }
+            }
+            line.Freeze();
+            var area = line.Clone();
+            var fill = new PathGeometry();
+            fill.AddGeometry(area);
+            var figure = fill.Figures[0];
+            figure.IsClosed = true;
+            figure.Segments.Add(new LineSegment(new Point(pts[^1].X, bottom), false));
+            figure.Segments.Add(new LineSegment(new Point(pts[0].X, bottom), false));
+            var grad = new LinearGradientBrush(Color.FromArgb(70, ink.R, ink.G, ink.B), Color.FromArgb(0, ink.R, ink.G, ink.B), 90);
+            grad.Freeze();
+            dc.DrawGeometry(grad, null, fill);
+            var pen = new Pen(Ink(235), thickness) { LineJoin = PenLineJoin.Round, StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+            pen.Freeze();
+            dc.DrawGeometry(null, pen, line);
+            // The current value.
+            dc.DrawEllipse(Ink(255), null, pts[^1], thickness * 1.6, thickness * 1.6);
+        }
+    }
     UIElement StartupPage()
     {
         var stack = new StackPanel { Margin = new Thickness(16, 4, 18, 16) };

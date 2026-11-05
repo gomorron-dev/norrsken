@@ -204,6 +204,29 @@ public static class NorrskenApps
         return rtb;
     }
 
+    /// <summary>
+    /// For an app whose own icon is missing: a Norrsken tile with its initial, instead of Windows' blank page.
+    /// </summary>
+    public static BitmapSource RenderLetter(string name, int size)
+    {
+        string letter = name.FirstOrDefault(char.IsLetterOrDigit) is var c && c != default ? char.ToUpperInvariant(c).ToString() : "?";
+        var dv = new DrawingVisual();
+        using (var dc = dv.RenderOpen())
+        {
+            double inset = size * 0.08, r = size * 0.24;
+            var tile = new Rect(inset, inset, size - 2 * inset, size - 2 * inset);
+            dc.DrawRoundedRectangle(new LinearGradientBrush(Color.FromRgb(70, 70, 74), Color.FromRgb(34, 34, 37), 90),
+                new Pen(new SolidColorBrush(Color.FromArgb(56, 255, 255, 255)), Math.Max(1, size / 96.0)), tile, r, r);
+            var text = new FormattedText(letter, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
+                new Typeface(new FontFamily("Segoe UI Variable Display, Segoe UI"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal),
+                size * 0.42, Brushes.White, 1.0);
+            dc.DrawText(text, new Point((size - text.Width) / 2, (size - text.Height) / 2));
+        }
+        var rtb = new RenderTargetBitmap(size, size, 96, 96, PixelFormats.Pbgra32);
+        rtb.Render(dv);
+        rtb.Freeze();
+        return rtb;
+    }
     static byte[] Png(BitmapSource b)
     {
         var enc = new PngBitmapEncoder();

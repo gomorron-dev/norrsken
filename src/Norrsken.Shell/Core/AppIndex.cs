@@ -49,10 +49,31 @@ public static class AppIndex
     {
         int n = 0;
         foreach (var a in apps)
-            if (a.Icon == null && (a.Icon = ShellIcons.Get(a.ShellPath)) != null) n++;
+        {
+            if (a.Icon != null) continue;
+            var icon = ShellIcons.Get(a.ShellPath);
+            // Windows' blank page means the app's icon is missing: try the shortcut's own icon file, else a Norrsken tile.
+            if (icon == null || ShellIcons.IsGenericPage(icon))
+                icon = UrlIcon(a.TargetPath) ?? UrlIcon(a.ParsingName) ?? NorrskenApps.RenderLetter(a.Name, ShellIcons.DefaultSize);
+            a.Icon = icon;
+            n++;
+        }
         return n;
     });
 
+    /// <summary>An Internet shortcut's IconFile (Steam and Epic games are .url shortcuts), when it exists.</summary>
+    static ImageSource? UrlIcon(string? path)
+    {
+        try
+        {
+            if (path == null || !path.EndsWith(".url", StringComparison.OrdinalIgnoreCase) || !File.Exists(path)) return null;
+            string? file = File.ReadLines(path).FirstOrDefault(l => l.StartsWith("IconFile=", StringComparison.OrdinalIgnoreCase))?[9..].Trim();
+            if (string.IsNullOrEmpty(file) || !File.Exists(file)) return null;
+            var icon = ShellIcons.Get(file);
+            return ShellIcons.IsGenericPage(icon) ? null : icon;
+        }
+        catch (Exception) { return null; }
+    }
     static Task<T> RunSta<T>(Func<T> work)
     {
         var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);

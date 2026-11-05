@@ -64,17 +64,17 @@ internal static class SelfTest
 
         Check("theme.monochrome", () =>
         {
-            // Every Norrsken colour must be a grey (R=G=B); colour comes only from third-party app icons.
+            // Every Norrsken colour is a grey or a barely tinted grey (Slate is cool, Sand is warm); colour comes only from app icons.
             var offenders = new List<string>();
             foreach (var t in Theme.All)
             {
                 Theme.Apply(t.Id);
                 foreach (var key in new[] { "DockBg", "DockLine", "Surface", "SurfaceSolid", "SurfaceAlt", "Border", "Text", "TextDim", "Hover", "Pressed", "Selection", "Dot", "PebbleFill" })
-                    if (Application.Current.Resources[key] is SolidColorBrush { Color: var c } && !(c.R == c.G && c.G == c.B))
+                    if (Application.Current.Resources[key] is SolidColorBrush { Color: var c } && (Math.Max(c.R, Math.Max(c.G, c.B)) - Math.Min(c.R, Math.Min(c.G, c.B))) * c.A / 255.0 > 24)
                         offenders.Add($"{t.Id}.{key}");
             }
             Theme.Apply("graphite");
-            return (offenders.Count == 0, offenders.Count == 0 ? "all theme colours are neutral greys" : string.Join(", ", offenders));
+            return (offenders.Count == 0, offenders.Count == 0 ? "all theme colours are greys or barely tinted greys" : string.Join(", ", offenders));
         });
 
         Check("icons.glyphs.parse", () =>
